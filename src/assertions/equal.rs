@@ -6,7 +6,7 @@ use colored::*;
 use std::fmt::Debug;
 
 /// Asserts that two passed arguments are equal.
-/// panics if they are note
+/// panics if they are not
 ///
 /// ```rust
 /// use k9::assert_equal;
