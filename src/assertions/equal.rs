@@ -36,6 +36,20 @@ macro_rules! assert_equal {
 }
 
 /// Same as `assert_equal!` but returns an assertion `Result` instead
+/// ```rust
+/// use k9::assert_equal_r;
+///
+/// fn give_me_a_number(s: &str) -> Result<u32, ParseIntError> {
+///    // parses the string into an integer
+///    return s.parse();
+/// }
+///
+/// let num_four = "4";
+/// let num_four_with_space = " 4";
+///
+/// // These should parse the string into the same integer: 4
+/// assert_equal_r!(give_me_a_number(num_four), give_me_a_number(num_four_with_space));
+/// ``
 #[macro_export]
 macro_rules! assert_equal_r {
     ($left:expr, $right:expr) => {{
