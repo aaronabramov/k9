@@ -49,6 +49,7 @@ macro_rules! assert_matches_snapshot {
     }};
 }
 
+/// Same as assert_matches_snapshot! but returns an assertion Result instead
 #[macro_export]
 macro_rules! assert_matches_snapshot_r {
     ($thing:expr) => {{
