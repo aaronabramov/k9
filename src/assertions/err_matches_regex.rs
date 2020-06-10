@@ -24,6 +24,7 @@ macro_rules! assert_err_matches_regex {
     }};
 }
 
+/// Same as assert_err_matches_regex! but returns an assertion Result instead
 #[macro_export]
 macro_rules! assert_err_matches_regex_r {
     ($s:expr, $regex:expr) => {{
