@@ -38,7 +38,7 @@ macro_rules! assert_err_matches_regex {
 /// }
 /// }
 /// let division_error = divide(4.0, 0.0);
-/// assert_err_matches_regex!(division_error, "Cannot");
+/// assert_err_matches_regex_r!(division_error, "Cannot");
 /// ```
 #[macro_export]
 macro_rules! assert_err_matches_regex_r {
