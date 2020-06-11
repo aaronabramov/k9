@@ -3,6 +3,8 @@ name = "k9"
 version = "0.1.2"
 authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
+description = "rust testing library"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
