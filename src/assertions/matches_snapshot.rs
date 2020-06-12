@@ -125,7 +125,18 @@ pub fn ensure_snap_dir_exists(snapshot_path: &Path) {
 }
 
 fn is_update_mode() -> bool {
-    std::env::var(UPDATE_ENV_VAR).map_or(false, |_| true)
+    // If runtime ENV variable is set, it takes precedence
+    let runtime_var = std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true);
+
+    if !runtime_var {
+        // If not, we'll also check compile time variable. This is going to be the case with `buck`
+        // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
+        if let Some(_) = option_env!("K9_UPDATE_SNAPSHOTS") {
+            return true;
+        }
+    }
+
+    runtime_var
 }
 
 pub fn snap_internal<T: std::fmt::Display>(
