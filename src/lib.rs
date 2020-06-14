@@ -35,12 +35,9 @@ assert_err_matches_regex!(result, "code 123");
 
 ```
 */
-pub mod assertion_error;
+
 pub mod assertions;
 pub mod config;
 pub mod string_diff;
 
 mod utils;
-
-pub use assertion_error::AssertionError;
-pub type Result<T> = core::result::Result<T, AssertionError>;

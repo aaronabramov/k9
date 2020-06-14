@@ -1,6 +1,4 @@
 use crate::string_diff::colored_diff;
-use crate::utils::add_linebreaks;
-use crate::AssertionError;
 use colored::*;
 use std::path::{Path, PathBuf};
 

@@ -6,12 +6,6 @@ pub fn assert_err_matches_regex<A, T: std::fmt::Debug>(
     regex: &str,
 ) -> Option<String> {
     let r = Regex::new(regex).unwrap();
-    let assertion_desc = format!(
-        "{}({}, {});\n",
-        "assert_err_matches_regex!".dimmed(),
-        "Result<T, E>".red(),
-        "regex".green()
-    );
 
     if let Err(err) = result {
         let s = format!("{:?}", err);
