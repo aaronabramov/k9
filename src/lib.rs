@@ -41,3 +41,8 @@ pub mod config;
 pub mod string_diff;
 
 mod utils;
+
+// re-export things so macros have access to them
+pub mod __macros__ {
+    pub use colored;
+}

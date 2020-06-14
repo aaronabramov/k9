@@ -96,7 +96,7 @@ pub fn make_assertion(
 #[macro_export]
 macro_rules! assert_equal {
     ($left:expr, $right:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -110,7 +110,7 @@ macro_rules! assert_equal {
         )
     }};
     ($left:expr, $right:expr, $description:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
@@ -138,7 +138,7 @@ macro_rules! assert_equal {
 #[macro_export]
 macro_rules! assert_matches_regex {
     ($s:expr, $regex:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!("{}, {}", stringify!($s).red(), stringify!($regex).green());
         $crate::assertions::make_assertion(
             "assert_matches_regex",
@@ -148,7 +148,7 @@ macro_rules! assert_matches_regex {
         )
     }};
     ($s:expr, $regex:expr, $description:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!(
             "{}, {}, {}",
             stringify!($s).red(),
@@ -187,7 +187,7 @@ macro_rules! assert_matches_regex {
 #[macro_export]
 macro_rules! assert_err_matches_regex {
     ($err:expr, $regex:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!("{}, {}", stringify!($err).red(), stringify!($regex).green(),);
         $crate::assertions::make_assertion(
             "assert_err_matches_regex",
@@ -197,7 +197,7 @@ macro_rules! assert_err_matches_regex {
         )
     }};
     ($s:expr, $regex:expr, $context:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let args_str = format!(
             "{}, {}, {}",
             stringify!($err).red(),
@@ -240,7 +240,7 @@ macro_rules! assert_err_matches_regex {
 #[macro_export]
 macro_rules! assert_matches_snapshot {
     ($to_snap:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let line = line!();
         let column = column!();
         let file = file!();
@@ -253,7 +253,7 @@ macro_rules! assert_matches_snapshot {
         )
     }};
     ($to_snap:expr, $description:expr) => {{
-        use colored::*;
+        use $crate::__macros__::colored::*;
         let line = line!();
         let column = column!();
         let file = file!();
