@@ -3,6 +3,7 @@ use k9::{assert_err_matches_regex, assert_err_matches_regex_r, assert_matches_sn
 
 #[test]
 fn test_assert_equal() -> Result<()> {
+    super::setup_test_env();
     let result: Result<()> = Err(anyhow::anyhow!("123 error message"));
     assert_err_matches_regex!(result, r#"123"#);
     let result: Result<()> = Ok(());
