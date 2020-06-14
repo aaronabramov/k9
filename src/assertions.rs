@@ -1,29 +1,20 @@
-use crate::utils::add_linebreaks;
-use lazy_static::lazy_static;
-use std::sync::atomic::{AtomicBool, Ordering};
+use crate::utils;
+use colored::*;
 
 pub mod equal;
 pub mod err_matches_regex;
 pub mod matches_regex;
 pub mod matches_snapshot;
 
-lazy_static! {
-    /// This is an example for using doc comment attributes
-    static ref ASSERTIONS_WILL_PANIC: AtomicBool = { AtomicBool::new(true) };
-}
-
-pub fn set_panic(v: bool) {
-    ASSERTIONS_WILL_PANIC.store(v, Ordering::Relaxed)
-}
-
-pub fn should_panic() -> bool {
-    ASSERTIONS_WILL_PANIC.load(Ordering::Relaxed)
-}
-
 #[derive(Debug)]
 pub struct Assertion {
     // Description of what's being asserted to provide a bit more context in the error mesasge
     pub description: Option<String>,
+    // the name of the assertion macro that wan invoked. e.g. `assert_equals`
+    pub name: String,
+    // string containing all arguments passed to the assertion macro. e.g. "1 + 1, my_var"
+    pub args_str: String,
+    // Assertion failure message, e.g. `expected blah blah but got blah`
     pub failure_message: Option<String>,
 }
 
@@ -31,47 +22,55 @@ impl Assertion {
     pub fn assert(&self) -> Option<String> {
         self.failure_message.as_ref().map(|failure_message| {
             let message = format!(
-                "{description}{failure_message}",
-                description = self
-                    .description
-                    .as_ref()
-                    .map(|s| add_linebreaks(&s))
-                    .unwrap_or("".into()),
+                "
+{separator}
+{assertion_expression}
+{description}
+{failure_message}
+{separator}",
+                assertion_expression = self.assertion_expression(),
+                description = utils::add_linebreaks(
+                    self.description
+                        .as_ref()
+                        .unwrap_or(&"Assertion Failure!".to_string())
+                ),
                 failure_message = failure_message,
+                separator = utils::terminal_separator_line().dimmed(),
             );
 
-            if should_panic() {
+            if crate::config::should_panic() {
                 panic!(message);
             }
             message
         })
     }
+
+    pub fn assertion_expression(&self) -> String {
+        format!(
+            "{assertion_name}({args});",
+            assertion_name = format!("{}!", self.name).yellow(),
+            args = self.args_str
+        )
+    }
 }
 
-#[macro_export]
-macro_rules! make_assertion {
-    ($message:expr, $description:expr) => {{
-        if let Some(message) = $message {
-            ($crate::assertions::Assertion {
-                description: Some($description.into()),
-                failure_message: Some(message),
-            })
-            .assert()
-        } else {
-            None
-        }
-    }};
-    ($message:expr) => {{
-        if let Some(message) = $message {
-            ($crate::assertions::Assertion {
-                description: None,
-                failure_message: Some(message),
-            })
-            .assert()
-        } else {
-            None
-        }
-    }};
+pub fn make_assertion(
+    name: &str,
+    args_str: String,
+    failure_message: Option<String>,
+    description: Option<&str>,
+) -> Option<String> {
+    if let Some(failure_message) = failure_message {
+        (Assertion {
+            description: description.map(|d| d.into()),
+            failure_message: Some(failure_message),
+            name: name.to_string(),
+            args_str,
+        })
+        .assert()
+    } else {
+        None
+    }
 }
 
 /// Asserts that two passed arguments are equal.
@@ -97,12 +96,32 @@ macro_rules! make_assertion {
 #[macro_export]
 macro_rules! assert_equal {
     ($left:expr, $right:expr) => {{
-        $crate::make_assertion!($crate::assertions::equal::assert_equal($left, $right))
+        use colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($left).red(),
+            stringify!($right).green()
+        );
+        $crate::assertions::make_assertion(
+            "assert_equal",
+            args_str,
+            $crate::assertions::equal::assert_equal($left, $right),
+            None,
+        )
     }};
     ($left:expr, $right:expr, $description:expr) => {{
-        $crate::make_assertion!(
+        use colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($left).red(),
+            stringify!($right).green(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_equal",
+            args_str,
             $crate::assertions::equal::assert_equal($left, $right),
-            $description
+            Some(&$description),
         )
     }};
 }
