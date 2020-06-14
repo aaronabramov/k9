@@ -100,7 +100,7 @@ macro_rules! assert_equal {
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
-            stringify!($right).green()
+            stringify!($right).green(),
         );
         $crate::assertions::make_assertion(
             "assert_equal",
@@ -139,11 +139,7 @@ macro_rules! assert_equal {
 macro_rules! assert_matches_regex {
     ($s:expr, $regex:expr) => {{
         use colored::*;
-        let args_str = format!(
-            "{}, {}",
-            stringify!($s).red(),
-            stringify!($regex).green()
-        );
+        let args_str = format!("{}, {}", stringify!($s).red(), stringify!($regex).green());
         $crate::assertions::make_assertion(
             "assert_matches_regex",
             args_str,
@@ -156,13 +152,62 @@ macro_rules! assert_matches_regex {
         let args_str = format!(
             "{}, {}, {}",
             stringify!($s).red(),
-            stringify!($regex).green()
+            stringify!($regex).green(),
             stringify!($description).dimmed()
         );
         $crate::assertions::make_assertion(
             "assert_matches_regex",
             args_str,
             $crate::assertions::matches_regex::assert_matches_regex($s, $regex),
+            Some($description),
+        )
+    }};
+}
+
+/// Asserts that the passed `Result` argument is an `Err` and
+/// and the debug string of that error matches provided regex.
+/// Regular expressions are compiled using `regex` crate.
+///
+/// ```rust
+/// use k9::assert_err_matches_regex;
+/// // Borrowed from Rust by Example: https://doc.rust-lang.org/stable/rust-by-example/std/result.html
+/// fn divide(x: f64, y: f64) -> Result<f64, &'static str> {
+/// if y == 0.0 {
+/// // This operation would `fail`, instead let's return the reason of
+/// // the failure wrapped in `Err`
+/// Err("Cannot divide by 0.")
+/// } else {
+/// // This operation is valid, return the result wrapped in `Ok`
+/// Ok(x / y)
+/// }
+/// }
+/// let division_error = divide(4.0, 0.0);
+/// assert_err_matches_regex!(division_error, "Cannot");
+/// ```
+#[macro_export]
+macro_rules! assert_err_matches_regex {
+    ($err:expr, $regex:expr) => {{
+        use colored::*;
+        let args_str = format!("{}, {}", stringify!($err).red(), stringify!($regex).green(),);
+        $crate::assertions::make_assertion(
+            "assert_err_matches_regex",
+            args_str,
+            $crate::assertions::err_matches_regex::assert_err_matches_regex($err, $regex),
+            None,
+        )
+    }};
+    ($s:expr, $regex:expr, $context:expr) => {{
+        use colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($err).red(),
+            stringify!($regex).green(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_err_matches_regex",
+            args_str,
+            $crate::assertions::err_matches_regex::assert_err_matches_regex($err, $regex),
             Some($description),
         )
     }};
