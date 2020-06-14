@@ -212,3 +212,61 @@ macro_rules! assert_err_matches_regex {
         )
     }};
 }
+
+/// Formats passed value and asserts that it matches existing snaphot.
+/// If snapshot file for this test does not exist, test can be run with `K9_UPDATE_SNAPSHOTS=1`
+/// environment variable to either create or replace existing snapshot file.
+/// Snapshots will be written into `__k9_snapshots__` directory next to the test file.
+///
+/// ```rust
+/// #[test]
+/// fn my_test() {
+///     struct A {
+///         name: &'a str,
+///         age: u32
+///     }
+///
+///     let a = A { name: "Lance", age: 9 };
+///
+///     // When first run with `K9_UPDATE_SNAPSHOTS=1` it will
+///     // create `__k9_snapshots__/my_test_file/my_test.snap` file
+///     // with contents being the serialized value of `a`.
+///     // Next time the test is run, if the newly serialized value of a
+///     // is different from the value of that snapshot file, the assertion
+///     // will fail.
+///     assert_matches_snapshot!(a);
+/// }
+/// ```
+#[macro_export]
+macro_rules! assert_matches_snapshot {
+    ($to_snap:expr) => {{
+        use colored::*;
+        let line = line!();
+        let column = column!();
+        let file = file!();
+        let args_str = format!("{}", stringify!($to_snap).red(),);
+        $crate::assertions::make_assertion(
+            "assert_matches_snapshot",
+            args_str,
+            $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
+            None,
+        )
+    }};
+    ($to_snap:expr, $description:expr) => {{
+        use colored::*;
+        let line = line!();
+        let column = column!();
+        let file = file!();
+        let args_str = format!(
+            "{}, {}",
+            stringify!($to_snap).red(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_matches_snapshot",
+            args_str,
+            $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
+            Some($description),
+        )
+    }};
+}

@@ -5,75 +5,6 @@ use colored::*;
 use std::path::{Path, PathBuf};
 
 const SNAPSHOT_DIR: &str = "__k9_snapshots__";
-const UPDATE_ENV_VAR: &str = "K9_UPDATE_SNAPSHOTS";
-
-/// Formats passed value and asserts that it matches existing snaphot.
-/// If snapshot file for this test does not exist, test can be run with `K9_UPDATE_SNAPSHOTS=1`
-/// environment variable to either create or replace existing snapshot file.
-/// Snapshots will be written into `__k9_snapshots__` directory next to the test file.
-///
-/// ```rust
-/// #[test]
-/// fn my_test() {
-///     struct A {
-///         name: &'a str,
-///         age: u32
-///     }
-///
-///     let a = A { name: "Lance", age: 9 };
-///
-///     // When first run with `K9_UPDATE_SNAPSHOTS=1` it will
-///     // create `__k9_snapshots__/my_test_file/my_test.snap` file
-///     // with contents being the serialized value of `a`.
-///     // Next time the test is run, if the newly serialized value of a
-///     // is different from the value of that snapshot file, the assertion
-///     // will fail.
-///     assert_matches_snapshot!(a);
-/// }
-/// ```
-#[macro_export]
-macro_rules! assert_matches_snapshot {
-    ($thing:expr) => {{
-        let line = line!();
-        let column = column!();
-        let file = file!();
-
-        $crate::assertions::matches_snapshot::snap_internal($thing, None, line, column, file).unwrap();
-    }};
-    ($thing:expr, $regex:expr, $context:expr) => {{
-        let line = line!();
-        let column = column!();
-        let file = file!();
-
-        $crate::assertions::matches_snapshot::snap_internal($thing, Some(context) line, column, file).unwrap();
-    }};
-}
-
-/// Same as assert_matches_snapshot! but returns an assertion Result instead
-/// ```rust
-/// #[test]
-/// fn my_test() {
-/// let result: Result<(), &str> = Err("http request fail. code 123");
-/// assert_matches_snapshot_r!(result);
-/// }
-/// ```
-#[macro_export]
-macro_rules! assert_matches_snapshot_r {
-    ($thing:expr) => {{
-        let line = line!();
-        let column = column!();
-        let file = file!();
-
-        $crate::assertions::matches_snapshot::snap_internal($thing, None, line, column, file);
-    }};
-    ($thing:expr, $regex:expr, $context:expr) => {{
-        let line = line!();
-        let column = column!();
-        let file = file!();
-
-        $crate::assertions::matches_snapshot::snap_internal($thing, Some(context) line, column, file);
-    }};
-}
 
 fn get_project_root_path() -> PathBuf {
     let buck_build_id_present = std::env::var("BUCK_BUILD_ID").is_ok();
@@ -144,21 +75,11 @@ fn is_update_mode() -> bool {
 
 pub fn snap_internal<T: std::fmt::Display>(
     thing: T,
-    context: Option<&str>,
     _line: u32,
     _column: u32,
     file: &str,
-) -> crate::Result<()> {
+) -> Option<String> {
     let thing_str = thing.to_string();
-    let assertion_desc = format!(
-        "{}({}{});\n",
-        "assert_matches_snapshot!".dimmed(),
-        "thing".red(),
-        context
-            .as_ref()
-            .map(|_| format!(", {}", "context".red()))
-            .unwrap_or_else(|| "".into()),
-    );
 
     let this_file_path = get_source_file_path(file);
     let snapshot_dir = get_snapshot_dir(&this_file_path);
@@ -168,7 +89,7 @@ pub fn snap_internal<T: std::fmt::Display>(
     if is_update_mode() {
         ensure_snap_dir_exists(&snap_path);
         std::fs::write(&snap_path, thing_str).unwrap();
-        Ok(())
+        None
     } else {
         let exists = snap_path.exists();
 
@@ -182,25 +103,23 @@ pub fn snap_internal<T: std::fmt::Display>(
         if let Some(diff) = diff {
             let message = format!(
                 "
-{context}{assertion_desc}
-Expected `{thing_desc}` to match `{snapshot_desc}`:
+Expected `{to_snap_desc}` to match `{snapshot_desc}`:
 {diff}
 
 {update_instructions}
 ",
-                context = context.map(add_linebreaks).unwrap_or_else(|| "".into()),
-                assertion_desc = &assertion_desc,
-                thing_desc = "thing".red(),
+                to_snap_desc = "to_snap".red(),
                 snapshot_desc = "snapshot".green(),
                 diff = diff,
                 update_instructions =
                     "run with `K9_UPDATE_SNAPSHOTS=1` to update snapshots".yellow(),
             );
-            return Err(AssertionError::new(message));
+
+            Some(message)
         } else if exists {
-            Ok(())
+            None
         } else {
-            return Err(AssertionError::new("Snapshot file doesn't exist".into()));
+            Some("Snapshot file doesn't exist".to_string())
         }
     }
 }
