@@ -125,3 +125,45 @@ macro_rules! assert_equal {
         )
     }};
 }
+
+/// Asserts that passed `&str` matches a regular expression.
+/// Regular expressions are compiled using `regex` crate.
+///
+/// ```rust
+/// use k9::assert_matches_regex;
+///
+/// assert_matches_regex!("1234-45", "\\d{4}-\\d{2}");
+/// assert_matches_regex!("abc", "abc");
+/// ````
+#[macro_export]
+macro_rules! assert_matches_regex {
+    ($s:expr, $regex:expr) => {{
+        use colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($s).red(),
+            stringify!($regex).green()
+        );
+        $crate::assertions::make_assertion(
+            "assert_matches_regex",
+            args_str,
+            $crate::assertions::matches_regex::assert_matches_regex($s, $regex),
+            None,
+        )
+    }};
+    ($s:expr, $regex:expr, $description:expr) => {{
+        use colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($s).red(),
+            stringify!($regex).green()
+            stringify!($description).dimmed()
+        );
+        $crate::assertions::make_assertion(
+            "assert_matches_regex",
+            args_str,
+            $crate::assertions::matches_regex::assert_matches_regex($s, $regex),
+            Some($description),
+        )
+    }};
+}

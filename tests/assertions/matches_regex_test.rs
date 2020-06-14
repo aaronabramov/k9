@@ -1,13 +1,13 @@
 use anyhow::Result;
-use k9::{assert_matches_regex_r, assert_matches_snapshot};
+use k9::*;
 
 #[test]
 fn test_assert_equal() -> Result<()> {
     super::setup_test_env();
-    assert_matches_regex_r!("abc", r#"abc"#)?;
-    assert_matches_regex_r!("123-234", "\\d{3}-\\d{3}")?;
+    assert!(assert_matches_regex!("abc", r#"abc"#).is_none());
+    assert!(assert_matches_regex!("123-234", "\\d{3}-\\d{3}").is_none());
 
-    let err = assert_matches_regex_r!("123-234", "\\d{3}-\\d{5}").unwrap_err();
+    let err = assert_matches_regex!("123-234", "\\d{3}-\\d{5}").expect("must fail");
 
     assert_matches_snapshot!(err);
     Ok(())
