@@ -9,7 +9,7 @@ pub mod matches_snapshot;
 
 lazy_static! {
     /// This is an example for using doc comment attributes
-    static ref ASSERTIONS_WILL_PANIC: AtomicBool = { AtomicBool::new(true) };
+    static ref ASSERTIONS_WILL_PANIC: AtomicBool = AtomicBool::new(true);
 }
 
 pub fn set_panic(v: bool) {
@@ -36,7 +36,7 @@ impl Assertion {
                     .description
                     .as_ref()
                     .map(|s| add_linebreaks(&s))
-                    .unwrap_or("".into()),
+                    .unwrap_or_else(|| "".into()),
                 failure_message = failure_message,
             );
 
@@ -85,7 +85,7 @@ macro_rules! make_assertion {
 ///
 /// #[derive(Debug, PartialEq)]
 /// struct A {
-///     name: &'static str   
+///     name: &'static str
 /// }
 ///
 /// let a1 = A { name: "Kelly" };

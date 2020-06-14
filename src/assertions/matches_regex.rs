@@ -42,7 +42,7 @@ pub fn assert_matches_regex_impl(s: &str, regex: &str, context: Option<&str>) ->
             "
 {context}{assertion_desc}({string_desc}, {regex_desc});\n
 Expected string:\n  {string}\nto match regex:\n  `{regex}`",
-            context = context.map(add_linebreaks).unwrap_or("".into()),
+            context = context.map(add_linebreaks).unwrap_or_else(|| "".into()),
             assertion_desc = "assert_matches_regex!".dimmed(),
             string_desc = "string".red(),
             regex_desc = "regex".green(),
