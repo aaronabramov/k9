@@ -84,7 +84,7 @@ pub fn make_assertion(
 ///
 /// #[derive(Debug, PartialEq)]
 /// struct A {
-///     name: &'static str   
+///     name: &'static str
 /// }
 ///
 /// let a1 = A { name: "Kelly" };

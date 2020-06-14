@@ -75,7 +75,7 @@ pub fn assert_err_matches_regex_impl<A, T: std::fmt::Debug>(
 {context}{assertion_desc}
 Expected `{result_desc}` to be an `{err_desc}` that matches {regex}:
 {error}\n\n",
-                context = context.map(add_linebreaks).unwrap_or("".into()),
+                context = context.map(add_linebreaks).unwrap_or_else(|| "".into()),
                 assertion_desc = &assertion_desc,
                 result_desc = "Result<T, E>".red(),
                 err_desc = "Err(std::fmt::Debug)".red(),
@@ -92,7 +92,7 @@ Expected `{result_desc}` to be an `{err_desc}` that matches {regex}:
 {context}{assertion_desc}
 Expected `{result_desc}` to be an `{err_desc}` that matches {regex}
 but it was `{ok_desc}`\n\n",
-            context = context.map(add_linebreaks).unwrap_or("".into()),
+            context = context.map(add_linebreaks).unwrap_or_else(|| "".into()),
             err_desc = "Err(std::fmt::Debug)".red(),
             regex = regex.green(),
             assertion_desc = &assertion_desc,

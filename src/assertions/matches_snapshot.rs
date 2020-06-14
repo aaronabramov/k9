@@ -134,7 +134,7 @@ fn is_update_mode() -> bool {
     if !runtime_var {
         // If not, we'll also check compile time variable. This is going to be the case with `buck`
         // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
-        if let Some(_) = option_env!("K9_UPDATE_SNAPSHOTS") {
+        if option_env!("K9_UPDATE_SNAPSHOTS").is_some() {
             return true;
         }
     }
@@ -157,7 +157,7 @@ pub fn snap_internal<T: std::fmt::Display>(
         context
             .as_ref()
             .map(|_| format!(", {}", "context".red()))
-            .unwrap_or("".into()),
+            .unwrap_or_else(|| "".into()),
     );
 
     let this_file_path = get_source_file_path(file);
@@ -188,7 +188,7 @@ Expected `{thing_desc}` to match `{snapshot_desc}`:
 
 {update_instructions}
 ",
-                context = context.map(add_linebreaks).unwrap_or("".into()),
+                context = context.map(add_linebreaks).unwrap_or_else(|| "".into()),
                 assertion_desc = &assertion_desc,
                 thing_desc = "thing".red(),
                 snapshot_desc = "snapshot".green(),
@@ -197,12 +197,10 @@ Expected `{thing_desc}` to match `{snapshot_desc}`:
                     "run with `K9_UPDATE_SNAPSHOTS=1` to update snapshots".yellow(),
             );
             return Err(AssertionError::new(message));
+        } else if exists {
+            Ok(())
         } else {
-            if exists {
-                Ok(())
-            } else {
-                return Err(AssertionError::new("Snapshot file doesn't exist".into()));
-            }
+            return Err(AssertionError::new("Snapshot file doesn't exist".into()));
         }
     }
 }
