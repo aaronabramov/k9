@@ -5,85 +5,22 @@ use crate::Result;
 use colored::*;
 use std::fmt::Debug;
 
-/// Asserts that two passed arguments are equal.
-/// panics if they are not
-///
-/// ```rust
-/// use k9::assert_equal;
-///
-/// // simple values
-/// assert_equal!(1, 1);
-///
-/// #[derive(Debug, PartialEq)]
-/// struct A {
-///     name: &'static str   
-/// }
-///
-/// let a1 = A { name: "Kelly" };
-/// let a2 = A { name: "Kelly" };
-///
-/// // this will print the visual difference between two structs
-/// assert_equal!(a1, a2);
-/// ```
-#[macro_export]
-macro_rules! assert_equal {
-    ($left:expr, $right:expr) => {{
-        $crate::assert_equal_r!($left, $right).unwrap();
-    }};
-    ($left:expr, $right:expr, $context:expr) => {{
-        $crate::assert_equal_r!($left, $right, $context).unwrap();
-    }};
-}
-
-/// Same as `assert_equal!` but returns an assertion `Result` instead
-/// ```rust
-/// use k9::assert_equal_r;
-///
-/// fn give_me_a_number(s: &str) -> Result<u32, ParseIntError> {
-///    // parses the string into an integer
-///    return s.parse();
-/// }
-///
-/// let num_four = "4";
-/// let num_four_with_space = " 4";
-///
-/// // These should parse the string into the same integer: 4
-/// assert_equal_r!(give_me_a_number(num_four), give_me_a_number(num_four_with_space));
-/// ``
-#[macro_export]
-macro_rules! assert_equal_r {
-    ($left:expr, $right:expr) => {{
-        $crate::assertions::equal::assert_equal_impl($left, $right, None)
-    }};
-    ($left:expr, $right:expr, $context:expr) => {{
-        $crate::assertions::equal::assert_equal_impl($left, $right, Some($context))
-    }};
-}
-
-pub fn assert_equal_impl<T: Debug + PartialEq>(
-    left: T,
-    right: T,
-    context: Option<&str>,
-) -> Result<()> {
+pub fn assert_equal<T: Debug + PartialEq>(left: T, right: T) -> Option<String> {
     if left != right {
         let diff_string = colored_diff(&format!("{:#?}", &left), &format!("{:#?}", &right))
             .unwrap_or_else(|| "no visual difference between values".to_string());
 
         let message = format!(
             "
-{context}{assertion_desc}({left_desc}, {right_desc})
-
 Expected `{left_desc}` to equal `{right_desc}`:
 {diff_string}",
-            context = context.map(add_linebreaks).unwrap_or("".into()),
-            assertion_desc = "assert_equal!".dimmed(),
             left_desc = "Left".red(),
             right_desc = "Right".green(),
             diff_string = &diff_string
         );
 
-        Err(AssertionError::new(message))
+        Some(message)
     } else {
-        Ok(())
+        None
     }
 }
