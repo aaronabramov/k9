@@ -3,7 +3,7 @@ use k9::{assert_equal, assert_matches_snapshot};
 
 #[test]
 fn test_assert_equal() -> Result<()> {
-    k9::assertions::set_panic(false);
+    super::setup_test_env();
 
     assert!(assert_equal!(1, 1).is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
@@ -17,7 +17,7 @@ fn test_assert_equal() -> Result<()> {
 
 #[test]
 fn multiline_struct_equality_test() -> Result<()> {
-    k9::assertions::set_panic(false);
+    super::setup_test_env();
     #[derive(PartialEq, Debug)]
     struct X {
         a: String,
@@ -48,7 +48,7 @@ fn multiline_struct_equality_test() -> Result<()> {
 
 #[test]
 fn with_context() {
-    k9::assertions::set_panic(false);
+    super::setup_test_env();
     let err = assert_equal!(1, 2, "Expected those two things to be equal").expect("must fail");
     assert_matches_snapshot!(err);
 }
