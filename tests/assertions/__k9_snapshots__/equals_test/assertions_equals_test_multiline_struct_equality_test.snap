@@ -1,6 +1,4 @@
 
-[2massert_equal![0m([31mLeft[0m, [32mRight[0m)
-
 Expected `[31mLeft[0m` to equal `[32mRight[0m`:
 
   [2mX {[0m

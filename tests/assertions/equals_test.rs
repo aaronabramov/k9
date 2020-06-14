@@ -1,20 +1,23 @@
 use anyhow::Result;
-use k9::{assert_equal, assert_equal_r, assert_matches_snapshot};
+use k9::{assert_equal, assert_matches_snapshot};
 
 #[test]
 fn test_assert_equal() -> Result<()> {
-    assert_equal!(1, 1);
-    assert_equal_r!("lol", &String::from("lol"))?;
+    k9::assertions::set_panic(false);
 
-    let err = assert_equal_r!(1, 2).unwrap_err();
-    assert_matches_snapshot!(err);
+    assert!(assert_equal!(1, 1).is_none());
+    assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
-    assert_equal_r!(123, 123, "Expected two integers to be the same")?;
+    let failure_message = assert_equal!(1, 2).expect("must fail");
+    assert_matches_snapshot!(failure_message);
+
+    assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
 }
 
 #[test]
 fn multiline_struct_equality_test() -> Result<()> {
+    k9::assertions::set_panic(false);
     #[derive(PartialEq, Debug)]
     struct X {
         a: String,
@@ -37,7 +40,7 @@ fn multiline_struct_equality_test() -> Result<()> {
         d: None,
     };
 
-    let err = assert_equal_r!(x1, x2).unwrap_err();
+    let err = assert_equal!(x1, x2).expect("must fail");
 
     assert_matches_snapshot!(err);
     Ok(())
@@ -45,6 +48,7 @@ fn multiline_struct_equality_test() -> Result<()> {
 
 #[test]
 fn with_context() {
-    let err = assert_equal_r!(1, 2, "Expected those two things to be equal").unwrap_err();
+    k9::assertions::set_panic(false);
+    let err = assert_equal!(1, 2, "Expected those two things to be equal").expect("must fail");
     assert_matches_snapshot!(err);
 }
