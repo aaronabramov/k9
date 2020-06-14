@@ -2,7 +2,7 @@
 
 [![Crates.io][crates-badge]][crates-url]
 [![Docs.rs][docs-badge]][docs-url]
-![Rust CI](https://github.com/TheWebDevel/k9/workflows/Rust%20CI/badge.svg)
+![Rust CI](https://github.com/aaronabramov/k9/workflows/Rust%20CI/badge.svg)
 
 [crates-badge]: https://img.shields.io/crates/v/k9.svg
 [crates-url]: https://crates.io/crates/k9
