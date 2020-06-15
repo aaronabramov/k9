@@ -172,14 +172,14 @@ macro_rules! assert_matches_regex {
 /// use k9::assert_err_matches_regex;
 /// // Borrowed from Rust by Example: https://doc.rust-lang.org/stable/rust-by-example/std/result.html
 /// fn divide(x: f64, y: f64) -> Result<f64, &'static str> {
-/// if y == 0.0 {
-/// // This operation would `fail`, instead let's return the reason of
-/// // the failure wrapped in `Err`
-/// Err("Cannot divide by 0.")
-/// } else {
-/// // This operation is valid, return the result wrapped in `Ok`
-/// Ok(x / y)
-/// }
+///     if y == 0.0 {
+///         // This operation would `fail`, instead let's return the reason of
+///         // the failure wrapped in `Err`
+///         Err("Cannot divide by 0.")
+///     } else {
+///         // This operation is valid, return the result wrapped in `Ok`
+///         Ok(x / y)
+///     }
 /// }
 /// let division_error = divide(4.0, 0.0);
 /// assert_err_matches_regex!(division_error, "Cannot");
