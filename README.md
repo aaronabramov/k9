@@ -102,7 +102,7 @@ First thing you need to do when creating a new test is using `assert_matches_sna
 assert_matches_snapshot!(format!("{:#?}", response));
 ```
 
-First time you run the tests it will fail, saynig that there is no existing snapshot found in the project.
+First time you run the tests it will fail, saying that there is no existing snapshot found in the project.
 
 To create a snapshot you need to run tests with `K9_UPDATE_SNAPSHOTS=1` environment variable
 ```sh
@@ -119,7 +119,7 @@ src/
 
 These files are expected to be checked into the repository and go through a code review.
 
-Then, after modifying your code (and potentially the value of returned `response` object) you can run the tetsts again. It will 
+Then, after modifying your code (and potentially the value of returned `response` object) you can run the tests again. It will 
 serialized a new `response` object into string and compare it with the previous (stored in the repo) snapshot while highliting the difference
 
 ![assert_matches_snapshot_example](https://user-images.githubusercontent.com/940133/84608050-34986d00-ae76-11ea-8fe1-4940ee5ad4ad.png)
