@@ -11,7 +11,7 @@
 
 ![k9_header](https://user-images.githubusercontent.com/940133/83342567-ae492c00-a2b6-11ea-8ccd-bb3e67df21f9.jpg)
 
-# Rust testing library that provides pretty assertion macros and snapshot testing.
+## Rust testing library that provides pretty assertion macros and snapshot testing.
 
 Rust already provides a good built-in test runner and a set of assertion macros like `assert!` and `assert_eq!`.
 They work great for for quick unit tests, but once the codebase and test suites grows to a certain point it gets 
@@ -55,7 +55,7 @@ using `k9::assert_equal` macro improves this output and prints the difference be
 use k9::assert_equal;
 assert_equal!(person1, person2, "These two must be the same person!");
 ```
-<INSERT SCREENSHOT>
+![assert_equal_example](https://user-images.githubusercontent.com/940133/84608052-35310380-ae76-11ea-97fe-751ee76a7735.png)
 
 # Non-equality based assertions
 
@@ -72,10 +72,11 @@ thread 'eq::test_eq3' panicked at 'assertion failed: `(left == right)`
   left: `false`,
  right: `true`', src/eq.rs:19:5
  ```
- Which doesn't help much. Especially, if you're new to the code base, seeing things like `expected true but got false` will make you got and look at the code before you even know what the problem can be, which can be very time consuming.
+ Which doesn't help much. Especially, if you're new to the code base, seeing things like `expected 'true' but got 'false'` will make you got and look at the code before you even know what the problem can be, which can be very time consuming.
 
 What we probably want to see is:
-<INSERT SCREENSHOT>
+
+![assert_matches_regex_example](https://user-images.githubusercontent.com/940133/84608051-35310380-ae76-11ea-87c8-c7c8b9ee3903.png)
 
 Which gives us enough context on what the problem is and how to fix it without for us having to go and run/debug the test first.
 
@@ -120,7 +121,7 @@ These files are expected to be checked into the repository and go through a code
 Then, after modifying your code (and potentially the value of returned `response` object) you can run the tetsts again. It will 
 serialized a new `response` object into string and compare it with the previous (stored in the repo) snapshot while highliting the difference
 
-<INSERT SCREENSHOT>
+![assert_matches_snapshot_example](https://user-images.githubusercontent.com/940133/84608050-34986d00-ae76-11ea-8fe1-4940ee5ad4ad.png)
 
 During this step you can examine whether the changes to the response object are intended or whether it's a newly introduced bug that needs to be fixed.
 
