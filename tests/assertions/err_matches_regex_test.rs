@@ -10,8 +10,10 @@ fn test_assert_equal() -> Result<()> {
     assert_err_matches_regex!(result, r#"123"#).expect("must fail");
 
     let result: Result<()> = Err(anyhow::anyhow!("123 error message"));
-    let err = assert_err_matches_regex!(result, "\\d{3}-\\d{5}").expect("must fail");
+    let err = assert_err_matches_regex!(result, "\\d{3}-\\d{5}")
+        .expect("must fail")
+        .get_failure_message();
 
-    assert_matches_snapshot!(err);
+    assert_matches_snapshot!(err).map(|a| a.panic());
     Ok(())
 }

@@ -8,8 +8,8 @@ fn test_assert_equal() -> Result<()> {
     assert!(assert_equal!(1, 1).is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
-    let failure_message = assert_equal!(1, 2).expect("must fail");
-    assert_matches_snapshot!(failure_message);
+    let assertion = assert_equal!(1, 2).expect("must fail");
+    assert_matches_snapshot!(assertion.get_failure_message()).map(|a| a.panic());
 
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
@@ -40,15 +40,19 @@ fn multiline_struct_equality_test() -> Result<()> {
         d: None,
     };
 
-    let err = assert_equal!(x1, x2).expect("must fail");
+    let err = assert_equal!(x1, x2)
+        .expect("must fail")
+        .get_failure_message();
 
-    assert_matches_snapshot!(err);
+    assert_matches_snapshot!(err).map(|a| a.panic());
     Ok(())
 }
 
 #[test]
 fn with_context() {
     super::setup_test_env();
-    let err = assert_equal!(1, 2, "Expected those two things to be equal").expect("must fail");
-    assert_matches_snapshot!(err);
+    let err = assert_equal!(1, 2, "Expected those two things to be equal")
+        .expect("must fail")
+        .get_failure_message();
+    assert_matches_snapshot!(err).map(|a| a.panic());
 }

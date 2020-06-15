@@ -7,8 +7,10 @@ fn test_assert_equal() -> Result<()> {
     assert!(assert_matches_regex!("abc", r#"abc"#).is_none());
     assert!(assert_matches_regex!("123-234", "\\d{3}-\\d{3}").is_none());
 
-    let err = assert_matches_regex!("123-234", "\\d{3}-\\d{5}").expect("must fail");
+    let err = assert_matches_regex!("123-234", "\\d{3}-\\d{5}")
+        .expect("must fail")
+        .get_failure_message();
 
-    assert_matches_snapshot!(err);
+    assert_matches_snapshot!(err).map(|a| a.panic());
     Ok(())
 }
