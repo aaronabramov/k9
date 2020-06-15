@@ -6,6 +6,7 @@ fn test_assert_greater_than() -> Result<()> {
     super::setup_test_env();
 
     assert!(assert_greater_than!(2, 1).is_none());
+    assert!(assert_greater_than!(1, 1).is_some());
 
     let failure_message = assert_greater_than!(1, 2).expect("must fail");
     assert_matches_snapshot!(failure_message);

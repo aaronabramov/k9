@@ -133,17 +133,8 @@ macro_rules! assert_equal {
 /// ```rust
 /// use k9::assert_greater_than;
 ///
-/// // simple values
 /// assert_greater_than!(2, 1);
-///
-/// #[derive(Debug, PartialOrd)]
-///
-/// let a1 = 15.75;
-/// let a2 = 10.32;
-///
-/// // this will print the visual difference between a1 & a2
-/// assert_greater_than!(a1, a2);
-/// ```
+
 #[macro_export]
 macro_rules! assert_greater_than {
     ($left:expr, $right:expr) => {{
