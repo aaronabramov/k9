@@ -34,7 +34,6 @@ struct Person {
 
 #[test]
 fn test_eq() {
-    use k9::assert_equal;
     let person1 = Person {name: "Bob", age: 12 }; 
     let person2 = Person {name: "Alice", age: 20 }; 
     assert_eq!(person1, person2, "These two must be the same person!");
