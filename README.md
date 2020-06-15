@@ -18,7 +18,7 @@ They work great for for quick unit tests, but once the codebase and test suites 
 harder and harder to test things and keep tests readable.
 
 This crate is aiming to solve two issues:
-- Provide better output when test fails
+- Provide better output when a test fails
 - Provide a set of assertion macros for non trivial testing use cases.
 
 For example, when testing that two srtucts are equal using `assert_eq!` macro the output does not provide a lot of help
@@ -72,7 +72,8 @@ thread 'eq::test_eq3' panicked at 'assertion failed: `(left == right)`
   left: `false`,
  right: `true`', src/eq.rs:19:5
  ```
- Which doesn't help much. Especially, if you're new to the code base, seeing things like `expected 'true' but got 'false'` will make you got and look at the code before you even know what the problem can be, which can be very time consuming.
+
+Which doesn't help much. Especially, if you're new to the code base, seeing things like `expected 'true' but got 'false'` will make you go and look at the code before you even know what the problem can be, which can be very time consuming.
 
 What we probably want to see is:
 
@@ -81,6 +82,7 @@ What we probably want to see is:
 Which gives us enough context on what the problem is and how to fix it without for us having to go and run/debug the test first.
 
 # Snapshot testing
+
 When testing high level APIs some data structures that are returned by functions can become pretty large and manually testing every single field can become impossible
 ```rust
 let response = make_api_call();
