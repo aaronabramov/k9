@@ -3,6 +3,7 @@ use colored::*;
 
 pub mod equal;
 pub mod err_matches_regex;
+pub mod greater_than;
 pub mod matches_regex;
 pub mod matches_snapshot;
 
@@ -10,7 +11,7 @@ pub mod matches_snapshot;
 pub struct Assertion {
     // Description of what's being asserted to provide a bit more context in the error mesasge
     pub description: Option<String>,
-    // the name of the assertion macro that wan invoked. e.g. `assert_equals`
+    // the name of the assertion macro that was invoked. e.g. `assert_equals`
     pub name: String,
     // string containing all arguments passed to the assertion macro. e.g. "1 + 1, my_var"
     pub args_str: String,
@@ -121,6 +122,56 @@ macro_rules! assert_equal {
             "assert_equal",
             args_str,
             $crate::assertions::equal::assert_equal($left, $right),
+            Some(&$description),
+        )
+    }};
+}
+
+/// Asserts if left is greater than right.
+/// panics if they are not
+///
+/// ```rust
+/// use k9::assert_greater_than;
+///
+/// // simple values
+/// assert_greater_than!(2, 1);
+///
+/// #[derive(Debug, PartialOrd)]
+///
+/// let a1 = 15.75;
+/// let a2 = 10.32;
+///
+/// // this will print the visual difference between a1 & a2
+/// assert_greater_than!(a1, a2);
+/// ```
+#[macro_export]
+macro_rules! assert_greater_than {
+    ($left:expr, $right:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($left).red(),
+            stringify!($right).green(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_greater_than",
+            args_str,
+            $crate::assertions::greater_than::assert_greater_than($left, $right),
+            None,
+        )
+    }};
+    ($left:expr, $right:expr, $description:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($left).red(),
+            stringify!($right).green(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_greater_than",
+            args_str,
+            $crate::assertions::greater_than::assert_greater_than($left, $right),
             Some(&$description),
         )
     }};
