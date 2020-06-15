@@ -21,7 +21,7 @@ This crate is aiming to solve two issues:
 - Provide better output when a test fails
 - Provide a set of assertion macros for non trivial testing use cases.
 
-For example, when testing that two srtucts are equal using `assert_eq!` macro the output does not provide a lot of help
+For example, when testing that two structs are equal using `assert_eq!` macro the output does not provide a lot of help
 in understanding why exactly this test failed.
 
 ```rust
@@ -40,7 +40,7 @@ fn test_eq() {
 }
 ```
 
-All we get is usually a wall of wite text collapsed into a single line and you have to find the difference between two stucts yourself. Which becomes very time consuming when structs are 10+ fields.
+All we get is usually a wall of wite text collapsed into a single line and you have to find the difference between two structs yourself. Which becomes very time consuming when structs are 10+ fields.
 
 ```
 ---- eq::test_eq stdout ----
@@ -120,7 +120,7 @@ src/
 These files are expected to be checked into the repository and go through a code review.
 
 Then, after modifying your code (and potentially the value of returned `response` object) you can run the tests again. It will 
-serialized a new `response` object into string and compare it with the previous (stored in the repo) snapshot while highliting the difference
+serialized a new `response` object into string and compare it with the previous (stored in the repo) snapshot while highlighting the difference
 
 ![assert_matches_snapshot_example](https://user-images.githubusercontent.com/940133/84608050-34986d00-ae76-11ea-8fe1-4940ee5ad4ad.png)
 
