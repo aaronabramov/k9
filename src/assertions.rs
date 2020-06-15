@@ -9,41 +9,40 @@ pub mod matches_snapshot;
 
 #[derive(Debug)]
 pub struct Assertion {
-    // Description of what's being asserted to provide a bit more context in the error mesasge
+    /// Description of what's being asserted to provide a bit more context in the error mesasge
     pub description: Option<String>,
-    // the name of the assertion macro that was invoked. e.g. `assert_equals`
+    /// the name of the assertion macro that was invoked. e.g. `assert_equals`
     pub name: String,
-    // string containing all arguments passed to the assertion macro. e.g. "1 + 1, my_var"
+    /// string containing all arguments passed to the assertion macro. e.g. "1 + 1, my_var"
     pub args_str: String,
-    // Assertion failure message, e.g. `expected blah blah but got blah`
-    pub failure_message: Option<String>,
+    /// Assertion failure message, e.g. `expected blah blah but got blah`
+    pub failure_message: String,
 }
 
 impl Assertion {
-    pub fn assert(&self) -> Option<String> {
-        self.failure_message.as_ref().map(|failure_message| {
-            let message = format!(
-                "
+    pub fn panic(&self) {
+        panic!(self.get_failure_message());
+    }
+
+    pub fn get_failure_message(&self) -> String {
+        let message = format!(
+            "
 {separator}
 {assertion_expression}
 {description}
 {failure_message}
 {separator}",
-                assertion_expression = self.assertion_expression(),
-                description = utils::add_linebreaks(
-                    self.description
-                        .as_ref()
-                        .unwrap_or(&"Assertion Failure!".to_string())
-                ),
-                failure_message = failure_message,
-                separator = utils::terminal_separator_line().dimmed(),
-            );
+            assertion_expression = self.assertion_expression(),
+            description = utils::add_linebreaks(
+                self.description
+                    .as_ref()
+                    .unwrap_or(&"Assertion Failure!".to_string())
+            ),
+            failure_message = self.failure_message,
+            separator = utils::terminal_separator_line().dimmed(),
+        );
 
-            if crate::config::should_panic() {
-                panic!(message);
-            }
-            message
-        })
+        message
     }
 
     pub fn assertion_expression(&self) -> String {
@@ -60,15 +59,18 @@ pub fn make_assertion(
     args_str: String,
     failure_message: Option<String>,
     description: Option<&str>,
-) -> Option<String> {
+) -> Option<Assertion> {
     if let Some(failure_message) = failure_message {
-        (Assertion {
+        let assertion = Assertion {
             description: description.map(|d| d.into()),
-            failure_message: Some(failure_message),
+            failure_message,
             name: name.to_string(),
             args_str,
-        })
-        .assert()
+        };
+        if crate::config::should_panic() {
+            assertion.panic();
+        }
+        Some(assertion)
     } else {
         None
     }

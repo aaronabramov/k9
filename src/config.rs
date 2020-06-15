@@ -2,8 +2,10 @@ use lazy_static::lazy_static;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 pub struct Config {
+    /// Configurable so we can test all assertions in our own test suite without panicing.
     assertions_will_panic: AtomicBool,
-    terminal_width_override: AtomicUsize, // 0 = disabled
+    /// 0 === disabled
+    terminal_width_override: AtomicUsize,
 }
 
 lazy_static! {

@@ -8,17 +8,20 @@ fn test_assert_greater_than() -> Result<()> {
     assert!(assert_greater_than!(2, 1).is_none());
     assert!(assert_greater_than!(1, 1).is_some());
 
-    let failure_message = assert_greater_than!(1, 2).expect("must fail");
-    assert_matches_snapshot!(failure_message);
+    let failure_message = assert_greater_than!(1, 2)
+        .expect("must fail")
+        .get_failure_message();
+    assert_matches_snapshot!(failure_message).map(|a| a.panic());
 
-    assert!(assert_greater_than!(9.8, 3.14, "Expected left to be greater than right").is_none());
+    assert!(assert_greater_than!(9.8, 3.15, "Expected left to be greater than right").is_none());
     Ok(())
 }
 
 #[test]
 fn with_context() {
     super::setup_test_env();
-    let err =
-        assert_greater_than!(1, 2, "Expected left to be greater than right").expect("must fail");
-    assert_matches_snapshot!(err);
+    let err = assert_greater_than!(1, 2, "Expected left to be greater than right")
+        .expect("must fail")
+        .get_failure_message();
+    assert_matches_snapshot!(err).map(|a| a.panic());
 }
