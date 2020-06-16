@@ -31,7 +31,8 @@ impl Assertion {
 {assertion_expression}
 {description}
 {failure_message}
-{separator}",
+{separator}
+",
             assertion_expression = self.assertion_expression(),
             description = utils::add_linebreaks(
                 self.description
@@ -136,7 +137,7 @@ macro_rules! assert_equal {
 /// use k9::assert_greater_than;
 ///
 /// assert_greater_than!(2, 1);
-
+/// ```
 #[macro_export]
 macro_rules! assert_greater_than {
     ($left:expr, $right:expr) => {{

@@ -23,14 +23,8 @@ buck and relies on `PWD` env variable to contain the project root, but `PWD` was
     PathBuf::from(project_root)
 }
 
-pub fn get_source_file_path(file: &str) -> PathBuf {
-    let mut p = get_project_root_path();
-    p.push(file);
-    p
-}
-
-pub fn get_snapshot_dir(source_file: &Path) -> PathBuf {
-    let mut c = source_file.components();
+pub fn get_snapshot_dir(source_file: &str) -> PathBuf {
+    let mut c = Path::new(source_file).components();
     let source_file_name = c.next_back().unwrap().as_os_str().to_string_lossy();
     let mut p: PathBuf = c.collect();
     p.push(SNAPSHOT_DIR);
@@ -63,6 +57,9 @@ fn is_update_mode() -> bool {
     if !runtime_var {
         // If not, we'll also check compile time variable. This is going to be the case with `buck`
         // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
+        //
+        // NOTE: using compile time vars is a bit sketchy, because technically you can compile the test suite
+        // once and re-run the compiled version multiple times in scenarious where you don't want to update
         if option_env!("K9_UPDATE_SNAPSHOTS").is_some() {
             return true;
         }
@@ -79,45 +76,57 @@ pub fn snap_internal<T: std::fmt::Display>(
 ) -> Option<String> {
     let thing_str = thing.to_string();
 
-    let this_file_path = get_source_file_path(file);
-    let snapshot_dir = get_snapshot_dir(&this_file_path);
+    let snapshot_dir = get_snapshot_dir(file);
     let test_name = get_test_name();
-    let snap_path = get_test_snap_path(&snapshot_dir, &test_name);
+    let relative_snap_path = get_test_snap_path(&snapshot_dir, &test_name);
+
+    let mut absolute_snap_path = get_project_root_path();
+    absolute_snap_path.push(&relative_snap_path);
+
+    let string_desc = "string".red();
+    let snapshot_desc = "snapshot".green();
+    let update_instructions =
+        "run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots".yellow();
 
     if is_update_mode() {
-        ensure_snap_dir_exists(&snap_path);
-        std::fs::write(&snap_path, thing_str).unwrap();
+        ensure_snap_dir_exists(&absolute_snap_path);
+        std::fs::write(&absolute_snap_path, thing_str).unwrap();
         None
-    } else {
-        let exists = snap_path.exists();
+    } else if absolute_snap_path.exists() {
+        let snapshot_content = std::fs::read_to_string(&absolute_snap_path.display().to_string())
+            .expect("can't read snapshot file");
+        let diff = colored_diff(&snapshot_content, &thing_str);
 
-        let snap_content = if exists {
-            std::fs::read_to_string(&snap_path).expect("can't read snapshot file")
-        } else {
-            String::new()
-        };
+        diff.map(|diff| {
+            format!(
+                "Expected {string_desc} to match {snapshot_desc} stored in
+{file}
 
-        let diff = colored_diff(&snap_content, &thing_str);
-        if let Some(diff) = diff {
-            let message = format!(
-                "
-Expected `{to_snap_desc}` to match `{snapshot_desc}`:
+Difference:
 {diff}
 
 {update_instructions}
 ",
-                to_snap_desc = "to_snap".red(),
-                snapshot_desc = "snapshot".green(),
+                string_desc = string_desc,
+                snapshot_desc = snapshot_desc,
+                file = relative_snap_path.display().to_string().green(),
                 diff = diff,
-                update_instructions =
-                    "run with `K9_UPDATE_SNAPSHOTS=1` to update snapshots".yellow(),
-            );
+                update_instructions = update_instructions,
+            )
+        })
+    } else {
+        Some(format!(
+            "Expected {string_desc} to match {snapshot_desc} stored in
+{file}
 
-            Some(message)
-        } else if exists {
-            None
-        } else {
-            Some("Snapshot file doesn't exist".to_string())
-        }
+but that snapshot file does not exist.
+
+{update_instructions}
+",
+            string_desc = string_desc,
+            snapshot_desc = snapshot_desc,
+            file = relative_snap_path.display().to_string().green(),
+            update_instructions = update_instructions,
+        ))
     }
 }
