@@ -4,6 +4,7 @@ use colored::*;
 pub mod equal;
 pub mod err_matches_regex;
 pub mod greater_than;
+pub mod lesser_than;
 pub mod matches_regex;
 pub mod matches_snapshot;
 
@@ -166,6 +167,47 @@ macro_rules! assert_greater_than {
             "assert_greater_than",
             args_str,
             $crate::assertions::greater_than::assert_greater_than($left, $right),
+            Some(&$description),
+        )
+    }};
+}
+
+/// Asserts if left is lesser than right.
+/// panics if they are not
+///
+/// ```rust
+/// use k9::assert_lesser_than;
+///
+/// assert_lesser_than!(1, 2);
+/// ```
+#[macro_export]
+macro_rules! assert_lesser_than {
+    ($left:expr, $right:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($left).red(),
+            stringify!($right).green(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_lesser_than",
+            args_str,
+            $crate::assertions::lesser_than::assert_lesser_than($left, $right),
+            None,
+        )
+    }};
+    ($left:expr, $right:expr, $description:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($left).red(),
+            stringify!($right).green(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_lesser_than",
+            args_str,
+            $crate::assertions::lesser_than::assert_lesser_than($left, $right),
             Some(&$description),
         )
     }};
