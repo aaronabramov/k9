@@ -5,8 +5,11 @@ use k9::{assert_greater_than, assert_matches_snapshot};
 fn test_assert_greater_than() -> Result<()> {
     super::setup_test_env();
 
-    assert!(assert_greater_than!(2, 1).is_none());
+    assert_greater_than!(2, 1).map(|a| a.panic());
     assert!(assert_greater_than!(1, 1).is_some());
+    assert!(assert_greater_than!(0, 1).is_some());
+    assert!(assert_greater_than!("234", "cde").is_some());
+    assert!(assert_greater_than!(std::f64::NAN, 1.0f64).is_some());
 
     let failure_message = assert_greater_than!(1, 2)
         .expect("must fail")

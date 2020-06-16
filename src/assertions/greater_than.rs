@@ -3,27 +3,28 @@ use std::cmp::Ordering;
 use std::fmt::Debug;
 
 pub fn assert_greater_than<T: Debug + PartialOrd>(left: T, right: T) -> Option<String> {
-    let not_greater_than = match left.partial_cmp(&right) {
-        None | Some(Ordering::Greater) => false,
-        _ => true,
-    };
+    let cmp = left.partial_cmp(&right);
 
-    // If left is not greater than right
-    if not_greater_than {
-        let message = format!(
-            "Expected {left_desc} value to be greater than {right_desc} value
+    if let Some(Ordering::Greater) = cmp {
+        None
+    } else {
+        let reason = match cmp {
+            None => ",\nbut these values can't be compared",
+            Some(Ordering::Equal) => ",\nbut they were equal",
+            _ => "",
+        };
+
+        Some(format!(
+            "Expected {left_desc} value to be greater than {right_desc} value{reason}
 
 Left value:  {left}
 Right value: {right}
 ",
             left_desc = "Left".red(),
             right_desc = "Right".green(),
+            reason = reason,
             left = format!("{:#?}", left).red(),
             right = format!("{:#?}", right).green(),
-        );
-
-        Some(message)
-    } else {
-        None
+        ))
     }
 }
