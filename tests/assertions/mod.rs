@@ -2,6 +2,7 @@ mod equals_test;
 mod err_matches_regex_test;
 mod greater_than_or_equal_test;
 mod greater_than_test;
+mod lesser_than_or_equal_test;
 mod lesser_than_test;
 mod matches_regex_test;
 mod matches_snapshot_test;
