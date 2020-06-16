@@ -10,44 +10,20 @@ pub fn assert_greater_than<T: Debug + PartialOrd>(left: T, right: T) -> Option<S
 
     // If left is not greater than right
     if not_greater_than {
-        let diff_string = greater_than_diff(&format!("{:#?}", &left), &format!("{:#?}", &right))
-            .unwrap_or_else(|| format!("{:#?} is not greater than {:#?}", left, right));
-
         let message = format!(
-            "
-Expected `{left_desc}` to be greater than `{right_desc}` but it wasn't:
-{diff_string}",
+            "Expected {left_desc} value to be greater than {right_desc} value
+
+Left value:  {left}
+Right value: {right}
+",
             left_desc = "Left".red(),
             right_desc = "Right".green(),
-            diff_string = &diff_string
+            left = format!("{:#?}", left).red(),
+            right = format!("{:#?}", right).green(),
         );
 
         Some(message)
     } else {
         None
     }
-}
-
-// assert_greater_than difference output if assertion fails
-// Example:
-// assert_greater_than!(1, 1);
-//
-// Assertion Failure!
-//
-// Expected `Left` to be greater than `Right` but it wasn't:
-//
-// Expected: > 1
-// Received:   1
-fn greater_than_diff(left: &str, right: &str) -> Option<String> {
-    let mut result = String::new();
-
-    if left > right {
-        return None;
-    }
-
-    result.push_str("\n");
-    result.push_str(&format!("Expected: {} {}\n", ">".green(), &right.green()));
-    result.push_str(&format!("Received:   {}\n", &left.red()));
-
-    Some(result)
 }

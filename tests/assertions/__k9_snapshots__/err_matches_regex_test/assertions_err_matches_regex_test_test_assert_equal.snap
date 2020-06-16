@@ -4,9 +4,10 @@
 
 Assertion Failure!
 
+Expected `[31mResult<T, E>[0m` to be an `[31mErr(E)[0m` that
+matches [32mregex[0m when formatted with `[33mformat!("{:?}", error)[0m`, 
 
-Expected `[31mResult<T, E>[0m` to be an `[31mErr(std::fmt::Debug)[0m` that matches [32m\d{3}-\d{5}[0m:
-[31m123 error message[0m
-
+Regex: [32m\d{3}-\d{5}[0m
+Formatted error: [31m123 error message[0m
 
 [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m

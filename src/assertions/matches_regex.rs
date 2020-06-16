@@ -6,8 +6,13 @@ pub fn assert_matches_regex(s: &str, regex: &str) -> Option<String> {
 
     if !r.is_match(s) {
         let message = format!(
-            "
-Expected string:\n  {string}\nto match regex:\n  `{regex}`",
+            "Expected {string_desc} to match {regex_desc}
+
+Regex: {regex}
+Received string: {string}
+",
+            string_desc = "string".red(),
+            regex_desc = "regex".green(),
             string = s.red(),
             regex = regex.green(),
         );
