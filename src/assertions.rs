@@ -4,10 +4,7 @@ use colored::*;
 pub mod equal;
 pub mod err_matches_regex;
 pub mod greater_than;
-<<<<<<< HEAD
 pub mod greater_than_or_equal;
-=======
->>>>>>> d783e6d5687bb7d2c1005107f66f692d1b0a88ca
 pub mod lesser_than;
 pub mod matches_regex;
 pub mod matches_snapshot;
