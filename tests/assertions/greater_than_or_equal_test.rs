@@ -13,6 +13,7 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
     assert!(assert_greater_than_or_equal!("abc", "abc").is_none());
     assert!(assert_greater_than_or_equal!(std::f64::NAN, 1.0f64).is_some());
     assert!(assert_greater_than_or_equal!(1.0f64, 1.0f64).is_none());
+    assert!(assert_greater_than_or_equal!(9.8f64, 1.0f64).is_none());
 
     let failure_message = assert_greater_than_or_equal!(1, 2)
         .expect("must fail")
