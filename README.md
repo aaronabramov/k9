@@ -13,9 +13,12 @@
 
 ### Available macros
 
+- `assert_contains`
 - `assert_equal`
 - `assert_greater_than`
+- `assert_greater_or_equal`
 - `assert_lesser_than`
+- `assert_lesser_than_or_equal`
 - `assert_matches_regex`
 - `assert_err_matches_regex`
 - `assert_matches_snapshot`

@@ -1,6 +1,7 @@
 use crate::utils;
 use colored::*;
 
+pub mod contains;
 pub mod equal;
 pub mod err_matches_regex;
 pub mod greater_than;
@@ -174,7 +175,7 @@ macro_rules! assert_greater_than {
     }};
 }
 
-/// Asserts if left greater than or equal to right.
+/// Asserts if left is greater than or equal to right.
 /// panics if they are not
 ///
 /// ```rust
@@ -257,7 +258,7 @@ macro_rules! assert_lesser_than {
     }};
 }
 
-/// Asserts if left lesser than or equal to right.
+/// Asserts if left is lesser than or equal to right.
 /// panics if they are not
 ///
 /// ```rust
@@ -295,6 +296,48 @@ macro_rules! assert_lesser_than_or_equal {
             args_str,
             $crate::assertions::lesser_than_or_equal::assert_lesser_than_or_equal($left, $right),
             Some(&$description),
+        )
+    }};
+}
+
+//// Asserts if left contains right value.
+/// panics if they are not
+///
+/// ```rust
+/// use k9::assert_contains;
+///
+/// let mut sequence: Vec<i32> = (0..10).collect();
+/// assert_contains!(&sequence, &5);
+/// sequence.push(11);
+/// assert_contains!(sequence, 11);
+///
+/// assert_contains!(&[10.5f64, 11.8f64], &11.8f64);
+/// ````
+#[macro_export]
+macro_rules! assert_contains {
+    ($s:expr, $regex:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!("{}, {}", stringify!($s).red(), stringify!($regex).green());
+        $crate::assertions::make_assertion(
+            "assert_contains",
+            args_str,
+            $crate::assertions::contains::assert_contains($s, $regex),
+            None,
+        )
+    }};
+    ($s:expr, $regex:expr, $description:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}, {}",
+            stringify!($s).red(),
+            stringify!($regex).green(),
+            stringify!($description).dimmed()
+        );
+        $crate::assertions::make_assertion(
+            "assert_contains",
+            args_str,
+            $crate::assertions::contains::assert_contains($s, $regex),
+            Some($description),
         )
     }};
 }

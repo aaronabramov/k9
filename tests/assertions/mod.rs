@@ -1,3 +1,4 @@
+mod contains_test;
 mod equals_test;
 mod err_matches_regex_test;
 mod greater_than_or_equal_test;
