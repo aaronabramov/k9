@@ -481,6 +481,7 @@ macro_rules! assert_ok {
         )
     }};
 }
+
 /// Asserts if value is Err(T).
 /// panics if it's are not
 ///
