@@ -2,6 +2,7 @@ use crate::utils;
 use colored::*;
 
 pub mod equal;
+pub mod err;
 pub mod err_matches_regex;
 pub mod greater_than;
 pub mod greater_than_or_equal;
@@ -9,6 +10,7 @@ pub mod lesser_than;
 pub mod lesser_than_or_equal;
 pub mod matches_regex;
 pub mod matches_snapshot;
+pub mod ok;
 
 #[derive(Debug)]
 pub struct Assertion {
@@ -440,6 +442,77 @@ macro_rules! assert_matches_snapshot {
             args_str,
             $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
             Some($description),
+        )
+    }};
+}
+
+/// Asserts if value is Ok(T).
+/// panics if it's are not
+///
+/// ```rust
+/// use k9::assert_ok;
+///
+/// assert_ok!(Ok(2));
+/// ```
+#[macro_export]
+macro_rules! assert_ok {
+    ($left:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!("{}", stringify!($left).red());
+        $crate::assertions::make_assertion(
+            "assert_ok",
+            args_str,
+            $crate::assertions::ok::assert_ok($left),
+            None,
+        )
+    }};
+    ($left:expr, $description:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($left).red(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_ok",
+            args_str,
+            $crate::assertions::ok::assert_ok($left),
+            Some(&$description),
+        )
+    }};
+}
+/// Asserts if value is Err(T).
+/// panics if it's are not
+///
+/// ```rust
+/// use k9::assert_err;
+///
+/// assert_err!(Err("Invalid path"));
+/// ```
+#[macro_export]
+macro_rules! assert_err {
+    ($left:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!("{}", stringify!($left).red());
+        $crate::assertions::make_assertion(
+            "assert_err",
+            args_str,
+            $crate::assertions::err::assert_err($left),
+            None,
+        )
+    }};
+    ($left:expr, $description:expr) => {{
+        use $crate::__macros__::colored::*;
+        let args_str = format!(
+            "{}, {}",
+            stringify!($left).red(),
+            stringify!($description).dimmed(),
+        );
+        $crate::assertions::make_assertion(
+            "assert_err",
+            args_str,
+            $crate::assertions::err::assert_err($left),
+            Some(&$description),
         )
     }};
 }
