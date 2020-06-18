@@ -2,7 +2,7 @@ use colored::*;
 use std::fmt::Debug;
 
 pub fn assert_err<T: Debug>(value: Result<T, T>) -> Option<String> {
-    if let Err(_) = value {
+    if value.is_err() {
         None
     } else {
         Some(format!(
