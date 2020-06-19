@@ -21,6 +21,8 @@
 - `assert_matches_regex`
 - `assert_err_matches_regex`
 - `assert_matches_snapshot`
+- `assert_ok`
+- `assert_err`
 
 See [https://docs.rs/k9](https://docs.rs/k9) for API documentation
 
