@@ -447,7 +447,7 @@ macro_rules! assert_matches_snapshot {
 }
 
 /// Asserts if value is Ok(T).
-/// panics if it's are not
+/// panics if it is not
 ///
 /// ```rust
 /// use k9::assert_ok;
@@ -483,7 +483,7 @@ macro_rules! assert_ok {
 }
 
 /// Asserts if value is Err(T).
-/// panics if it's are not
+/// panics if it is not
 ///
 /// ```rust
 /// use k9::assert_err;
