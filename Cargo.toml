@@ -4,6 +4,7 @@ version = "0.2.0"
 authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
 description = "rust testing library"
+readme = "README.md"
 license = "MIT"
 repository = "https://github.com/aaronabramov/k9"
 
