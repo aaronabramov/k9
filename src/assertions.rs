@@ -3,11 +3,13 @@ use colored::*;
 
 pub mod equal;
 pub mod err;
+#[cfg(feature = "regex")]
 pub mod err_matches_regex;
 pub mod greater_than;
 pub mod greater_than_or_equal;
 pub mod lesser_than;
 pub mod lesser_than_or_equal;
+#[cfg(feature = "regex")]
 pub mod matches_regex;
 pub mod matches_snapshot;
 pub mod ok;
@@ -310,6 +312,7 @@ macro_rules! assert_lesser_than_or_equal {
 /// assert_matches_regex!("1234-45", "\\d{4}-\\d{2}");
 /// assert_matches_regex!("abc", "abc");
 /// ````
+#[cfg(feature = "regex")]
 #[macro_export]
 macro_rules! assert_matches_regex {
     ($s:expr, $regex:expr) => {{
@@ -359,6 +362,7 @@ macro_rules! assert_matches_regex {
 /// let division_error = divide(4.0, 0.0);
 /// assert_err_matches_regex!(division_error, "Cannot");
 /// ```
+#[cfg(feature = "regex")]
 #[macro_export]
 macro_rules! assert_err_matches_regex {
     ($err:expr, $regex:expr) => {{
