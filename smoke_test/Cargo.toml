@@ -6,7 +6,7 @@ edition = "2018"
 
 # More information on Caret requirements: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#caret-requirements
 [dependencies]
-k9_published = { package = "k9", version = "^0" } # :=  >=0.0.0, <1.0.0
+k9_published = { package = "k9", version = "*" } # latest
 
 [lib]
 name = "smoke_test"
