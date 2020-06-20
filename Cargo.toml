@@ -1,6 +1,6 @@
 [package]
 name = "k9"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
 description = "rust testing library"
