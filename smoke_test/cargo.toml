@@ -1,0 +1,13 @@
+[package]
+name = "smoke_test"
+version = "0.1.0"
+authors = ["Aaron Abramov <aaron@abramov.io>"]
+edition = "2018"
+
+# More information on Caret requirements: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#caret-requirements
+[dependencies]
+k9_published = { package = "k9", version = "^0" } # :=  >=0.0.0, <1.0.0
+
+[lib]
+name = "smoke_test"
+path = "lib.rs"
