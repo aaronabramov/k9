@@ -22,3 +22,4 @@ term_size = "0.3.2"
 
 [dev-dependencies]
 anyhow = "1.0.31"
+strip-ansi-escapes = "0.1.0"
