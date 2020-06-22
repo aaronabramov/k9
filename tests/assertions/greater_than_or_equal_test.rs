@@ -1,5 +1,7 @@
+use crate::assert_matches_inline_snapshot;
+use crate::assertion_message;
 use anyhow::Result;
-use k9::{assert_greater_than_or_equal, assert_matches_snapshot};
+use k9::assert_greater_than_or_equal;
 
 #[test]
 fn test_assert_greater_than_or_equal() -> Result<()> {
@@ -15,10 +17,22 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
     assert!(assert_greater_than_or_equal!(1.0f64, 1.0f64).is_none());
     assert!(assert_greater_than_or_equal!(9.8f64, 1.0f64).is_none());
 
-    let failure_message = assert_greater_than_or_equal!(1, 2)
-        .expect("must fail")
-        .get_failure_message();
-    assert_matches_snapshot!(failure_message).map(|a| a.panic());
+    assert_matches_inline_snapshot!(
+        assertion_message(assert_greater_than_or_equal!(1, 2)),
+        "
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+assert_greater_than_or_equal!(1, 2);
+
+Assertion Failure!
+
+Expected Left value to be greater than or equal to Right value
+
+Left value:  1
+Right value: 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+    );
 
     assert!(assert_greater_than_or_equal!(
         9.8,
@@ -32,9 +46,24 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
 #[test]
 fn with_context() {
     super::setup_test_env();
-    let err =
-        assert_greater_than_or_equal!(1, 2, "Expected left to greater than or equal to right")
-            .expect("must fail")
-            .get_failure_message();
-    assert_matches_snapshot!(err).map(|a| a.panic());
+    assert_matches_inline_snapshot!(
+        assertion_message(assert_greater_than_or_equal!(
+            1,
+            2,
+            "Expected left to greater than or equal to right"
+        )),
+        "
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+assert_greater_than_or_equal!(1, 2, \"Expected left to greater than or equal to right\");
+
+Expected left to greater than or equal to right
+
+Expected Left value to be greater than or equal to Right value
+
+Left value:  1
+Right value: 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+    );
 }

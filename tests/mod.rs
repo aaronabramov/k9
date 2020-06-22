@@ -15,3 +15,7 @@ pub fn strip_ansi(s: &str) -> String {
     )
     .expect("not a utf8 string")
 }
+
+pub fn assertion_message(m: Option<k9::assertions::Assertion>) -> String {
+    strip_ansi(&m.expect("Assertion must fail").get_failure_message())
+}
