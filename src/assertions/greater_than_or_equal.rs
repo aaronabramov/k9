@@ -4,6 +4,7 @@ use std::fmt::Debug;
 
 pub fn assert_greater_than_or_equal<T: Debug + PartialOrd>(left: T, right: T) -> Option<String> {
     let cmp = left.partial_cmp(&right);
+
     match cmp {
         Some(Ordering::Greater) | Some(Ordering::Equal) => None,
         _ => {

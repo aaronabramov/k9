@@ -1,28 +1,31 @@
 use ra_syntax::SyntaxNode;
 
-// Transform line!()and column!() macro returns into a character offset in the source file content `&str`
+// Transform line!()and column!() macro returns into a byte offset in the source file content `&str`
+// This byte offset should be exactly the same as the result of `ra_syntax` tokenizer return, since
+// we'll be looking through the AST using ra parser.
 pub fn line_and_column_to_offset(
     file_content: &str,
     line_num: u32,
     column_num: u32,
 ) -> Result<u32, String> {
-    let mut chars_before = 0;
+    let mut bytes_before = 0;
+
     for (i, line) in file_content.lines().enumerate() {
         if i as u32 + 1 == line_num {
-            let line_length = line.chars().count() as u32;
+            let line_length = line.len() as u32;
             if line_length < column_num {
                 return Err(format!(
                     "line `{}` have `{}` characters and doesn't have `{}` column",
                     line_num, line_length, column_num
                 ));
             }
-            chars_before += column_num - 1;
+            bytes_before += column_num - 1;
             break;
         } else {
-            chars_before += line.chars().count() as u32 + 1; // line + \n char
+            bytes_before += line.len() as u32 + 1; // line + 1 byte for \n character
         }
     }
-    Ok(chars_before)
+    Ok(bytes_before)
 }
 
 pub fn ast_dfs_find_node<F>(node: SyntaxNode, f: F) -> Result<Option<SyntaxNode>, String>

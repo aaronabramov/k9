@@ -6,6 +6,7 @@ use std::path::PathBuf;
 enum UpdateInlineSnapshotMode {
     Create,  // when there's no inline snapshot
     Replace, // when there's an existing inline snapshot
+    NoOp,    // no need to update anything, current snapshot is valid
 }
 
 pub fn matches_inline_snapshot(
@@ -20,8 +21,15 @@ pub fn matches_inline_snapshot(
         (None, false) => empty_snapshot_message(),
         (_, true) => {
             let this_file_path = crate::paths::get_absolute_path(file);
-            let mode = if snapshot.is_some() {
-                UpdateInlineSnapshotMode::Replace
+
+            let mode = if let Some(snapshot) = snapshot {
+                let need_updating = snapshot_matching_message(&s, snapshot).is_some();
+
+                if need_updating {
+                    UpdateInlineSnapshotMode::Replace
+                } else {
+                    UpdateInlineSnapshotMode::NoOp
+                }
             } else {
                 UpdateInlineSnapshotMode::Create
             };
@@ -73,6 +81,11 @@ fn update_inline_snapshot(
     to_add: &str,
     mode: UpdateInlineSnapshotMode,
 ) -> Result<(), String> {
+    if let UpdateInlineSnapshotMode::NoOp = mode {
+        // no need to update anything, snapshot is up to date
+        return Ok(());
+    }
+
     let mut file_content =
         std::fs::read_to_string(file_path.display().to_string()).expect("can't read snapshot file");
 
@@ -86,13 +99,14 @@ fn update_inline_snapshot(
     let comma_separator = match mode {
         UpdateInlineSnapshotMode::Create => ", ",
         UpdateInlineSnapshotMode::Replace => "",
+        UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
     };
 
     let new_content = format!(
         "{before}{comma_separator} \"{to_add}\"{after}",
         before = before,
         comma_separator = comma_separator,
-        to_add = to_add,
+        to_add = escape_snapshot_string_literal(to_add),
         after = after
     );
 
@@ -120,7 +134,7 @@ fn find_inline_snapshot_range(
         let start = range.start().to_usize();
         let end = range.end().to_usize();
 
-        if start == offset {
+        if start == offset || start == offset + 1 {
             needle.replace(root);
             break; // that's the node!
         }
@@ -197,5 +211,20 @@ fn find_inline_snapshot_range(
             let last_paren_start = last_paren.range().start();
             Ok((last_paren_start.to_usize(), last_paren_start.to_usize()))
         }
+        UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
     }
+}
+
+fn escape_snapshot_string_literal(snapshot_string: &str) -> String {
+    let mut result = String::with_capacity(snapshot_string.len());
+
+    // there must be a more performant way to do it, but generally snapshot should be pretty light
+    for c in snapshot_string.chars() {
+        match c {
+            '"' => result.push_str(r#"\""#),
+            _ => result.push(c),
+        }
+    }
+
+    result
 }
