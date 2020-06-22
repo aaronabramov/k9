@@ -1,6 +1,7 @@
 use crate::assert_matches_inline_snapshot;
+use crate::assertion_message;
 use anyhow::Result;
-use k9::{assert_equal, assert_matches_snapshot};
+use k9::assert_equal;
 
 #[test]
 fn test_assert_equal() -> Result<()> {
@@ -9,21 +10,23 @@ fn test_assert_equal() -> Result<()> {
     assert!(assert_equal!(1, 1).is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
-    let assertion = assert_equal!(1, 2).expect("must fail");
-    assert_matches_inline_snapshot!(assertion.get_failure_message(),       "
-[2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
-[33massert_equal![0m([31m1[0m, [32m2[0m);
+    assert_matches_inline_snapshot!(
+        assertion_message(assert_equal!(2, 9)),
+        "
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+assert_equal!(2, 9);
 
 Assertion Failure!
 
 
-Expected `[31mLeft[0m` to equal `[32mRight[0m`:
+Expected `Left` to equal `Right`:
 
-[31m-[0m [31m1[0m
-[32m+[0m [32m2[0m
+- 2
++ 9
 
-[2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
-");
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+    );
 
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
@@ -87,6 +90,7 @@ Expected `Left` to equal `Right`:
 "
     );
 
+    // test colors
     assert_matches_inline_snapshot!(&err,   "
 [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 [33massert_equal![0m([31mx1[0m, [32mx2[0m);
@@ -118,8 +122,21 @@ Expected `[31mLeft[0m` to equal `[32mRight[0m`:
 #[test]
 fn with_context() {
     super::setup_test_env();
-    let err = assert_equal!(1, 2, "Expected those two things to be equal")
-        .expect("must fail")
-        .get_failure_message();
-    assert_matches_snapshot!(err).map(|a| a.panic());
+    assert_matches_inline_snapshot!(
+        assertion_message(assert_equal!(1, 2, "Expected those two things to be equal")),
+        "
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+assert_equal!(1, 2, \"Expected those two things to be equal\");
+
+Expected those two things to be equal
+
+
+Expected `Left` to equal `Right`:
+
+- 1
++ 2
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"
+    );
 }

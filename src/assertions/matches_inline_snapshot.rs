@@ -178,7 +178,6 @@ fn find_inline_snapshot_range(
     match mode {
         UpdateInlineSnapshotMode::Replace => {
             let mut children: Vec<_> = token_tree.children().collect();
-
             let closing_paren = children.pop().expect("must have closing paren");
             assert_eq!(closing_paren.kind(), SyntaxKind::R_PAREN);
 

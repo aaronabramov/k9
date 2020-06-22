@@ -39,8 +39,9 @@ pub fn terminal_width_override() -> usize {
 fn is_update_mode() -> bool {
     // If runtime ENV variable is set, it takes precedence
     let runtime_var = std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true);
+    let buck_build_id_present = std::env::var("BUCK_BUILD_ID").is_ok();
 
-    if !runtime_var {
+    if !runtime_var && buck_build_id_present {
         // If not, we'll also check compile time variable. This is going to be the case with `buck`
         // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
         //
