@@ -184,7 +184,7 @@ fn find_inline_snapshot_range(
             let mut needle = None;
             for node in children.into_iter().rev() {
                 match node.kind() {
-                    SyntaxKind::WHITESPACE => continue,
+                    SyntaxKind::WHITESPACE | SyntaxKind::COMMENT => continue,
                     SyntaxKind::STRING => {
                         needle = Some((
                             node.range().start().to_usize(),
