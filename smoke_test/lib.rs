@@ -1,20 +1,22 @@
-extern crate k9_published;
-
 #[test]
 fn smoke_test() {
-    k9_published::assert_equal!(1, 1);
+    use k9_published::*;
 
-    k9_published::assert_err!(Err("Error!"));
+    assert_equal!(1, 1);
 
-    k9_published::assert_greater_than!(2, 1);
+    assert_err!(Err("Error!"));
 
-    k9_published::assert_greater_than_or_equal!(1, 1);
+    assert_greater_than!(2, 1);
 
-    k9_published::assert_lesser_than!(1, 2);
+    assert_greater_than_or_equal!(1, 1);
 
-    k9_published::assert_lesser_than_or_equal!(1, 1);
+    assert_lesser_than!(1, 2);
 
-    k9_published::assert_matches_regex!("abc", "abc");
+    assert_lesser_than_or_equal!(1, 1);
 
-    k9_published::assert_ok!(Ok(2));
+    assert_matches_regex!("abc", "abc");
+
+    assert_ok!(Ok(2));
+
+    assert_matches_inline_snapshot!(format!("{:?}", Some(true)), "Some(true)");
 }
