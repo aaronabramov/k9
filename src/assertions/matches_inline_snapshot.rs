@@ -1,7 +1,6 @@
 use crate::types;
 use colored::*;
 use lazy_static::lazy_static;
-use ra_syntax::{AstNode, SyntaxKind};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
@@ -42,6 +41,29 @@ pub fn matches_inline_snapshot(
     }
 }
 
+use proc_macro2::{TokenStream, TokenTree};
+use syn::visit::Visit;
+use syn::{Macro, PathSegment};
+
+#[derive(Debug)]
+struct MacroVisitor {
+    found: Option<TokenStream>,
+    line: usize,
+}
+
+impl<'ast> Visit<'ast> for MacroVisitor {
+    fn visit_macro(&mut self, m: &'ast Macro) {
+        let last_path_segment = m.path.segments.last();
+        if let Some(PathSegment { ident, .. }) = last_path_segment {
+            if ident.to_string().as_str() == "assert_matches_inline_snapshot"
+                && ident.span().start().line == self.line
+            {
+                self.found.replace(m.tokens.to_owned());
+            }
+        }
+    }
+}
+
 #[derive(Clone, Copy)]
 enum UpdateInlineSnapshotMode {
     Create,  // when there's no inline snapshot
@@ -51,8 +73,20 @@ enum UpdateInlineSnapshotMode {
 // struct that represents a modification to the source code. E.g. we added/updated inline snapshot
 #[derive(Debug)]
 pub struct Patch {
-    pub offset: u32, // offset in bytes at where the patch occurred
-    pub shift: i32,  // how many bytes were added/removed after that offset
+    location: LineColumn,
+    line_shift: i32,
+}
+
+#[derive(Debug)]
+struct LineColumn {
+    line: usize,
+    column: usize,
+}
+
+#[derive(Debug)]
+struct Range {
+    start: LineColumn,
+    end: LineColumn,
 }
 
 pub struct SourceFile {
@@ -142,8 +176,8 @@ but that assertion did not have any inline snapshots.
 
 fn update_inline_snapshot(
     file_path: PathBuf,
-    line_num: u32,
-    column_num: u32,
+    original_line_num: u32,
+    original_column_num: u32,
     to_add: &str,
     mode: UpdateInlineSnapshotMode,
 ) -> Result<(), String> {
@@ -154,30 +188,23 @@ fn update_inline_snapshot(
 
     with_source_file(&file_path.display().to_string(), |file| {
         file.read_and_compare();
-        let mut content = file.content.take().expect("empty file content. read first");
+        let content = file.content.take().expect("empty file content. read first");
 
-        let original_offset = crate::parsing::line_and_column_to_offset(
-            file.original_content.as_ref().unwrap(),
-            line_num,
-            column_num,
-        )
-        .expect("failed to get char offset in the file from provided line!() and column!()")
-            as i32;
-
-        let mut new_offset = original_offset;
+        let mut new_line_num = original_line_num as i32;
+        // for now we assume that columns don't change (unless there are two snapshots on the same line)
+        let new_column_num = original_column_num;
 
         for patch in &file.patches {
-            if patch.offset <= original_offset as u32 {
-                new_offset += patch.shift;
+            if patch.location.line <= original_line_num as usize {
+                new_line_num += patch.line_shift;
             }
         }
 
         let range_to_replace =
-            find_inline_snapshot_range(&content, new_offset as usize, mode).unwrap();
+            find_inline_snapshot_range(&content, new_line_num as u32, new_column_num, mode)
+                .unwrap();
 
-        let mut rest = content.split_off(range_to_replace.0);
-        let before = content;
-        let after = rest.split_off(range_to_replace.1 - range_to_replace.0); // part we're replacing
+        let (before, after, lines_removed) = split_by_range(content, &range_to_replace).unwrap();
 
         let comma_separator = match mode {
             UpdateInlineSnapshotMode::Create => ", ",
@@ -191,12 +218,14 @@ fn update_inline_snapshot(
             to_add = escape_snapshot_string_literal(to_add),
         );
 
-        let bytes_before = range_to_replace.1 - range_to_replace.0;
-        let bytes_after = replace_with.len();
+        let new_lines = replace_with.lines().count() - 1; // we had an existing line
 
         file.patches.push(Patch {
-            offset: original_offset as u32,
-            shift: bytes_after as i32 - bytes_before as i32,
+            location: LineColumn {
+                line: original_line_num as usize,
+                column: original_column_num as usize,
+            },
+            line_shift: new_lines as i32 - lines_removed as i32,
         });
 
         let new_content = format!(
@@ -215,100 +244,58 @@ fn update_inline_snapshot(
 
 fn find_inline_snapshot_range(
     file_content: &str,
-    offset: usize,
+    line_num: u32,
+    _column_num: u32,
     mode: UpdateInlineSnapshotMode,
-) -> Result<(usize, usize), String> {
-    let file = ra_syntax::File::parse(file_content);
-    let mut root = file.ast().syntax();
-    let mut needle = None;
+) -> Result<Range, String> {
+    let syntax = syn::parse_file(file_content).expect("Unable to parse file");
 
-    // Binary search the entire file's AST for that syntax node at an `offset` position
-    loop {
-        let range = root.range();
-        let start = range.start().to_usize();
-        let end = range.end().to_usize();
+    let mut macro_visitor = MacroVisitor {
+        found: None,
+        line: line_num as usize,
+    };
 
-        if start == offset || start == offset + 1 {
-            needle.replace(root);
-            break; // that's the node!
-        }
+    macro_visitor.visit_file(&syntax);
 
-        if end < offset {
-            panic!("while traversing AST, the root node end offset `{}` was lower than the offset we were looking for `{}`", end, offset);
-        }
-
-        if root.children().count() == 0 {
-            panic!("cant' find the AST node of assert_matches_inline_snapshot! macro");
-        }
-
-        for child in root.children() {
-            let range = child.range();
-            let start = range.start().to_usize();
-            let end = range.end().to_usize();
-
-            if start <= offset && end > offset {
-                root = child;
-                break;
-            }
-        }
-    }
-
-    let needle = needle.expect("could not find the AST node for inline snapshot");
-
-    assert_eq!(needle.kind(), SyntaxKind::EXPR_STMT);
-
-    let macro_call = crate::parsing::ast_dfs_find_node(needle.owned(), |node| match node.kind() {
-        SyntaxKind::MACRO_CALL => Ok(true),
-        _ => Ok(false),
-    })
-    .expect("errored while searching for macro call AST node")
-    .expect("Failed to find MACRO_CALL AST node for inline_snapshot");
-
-    let path = macro_call
-        .first_child()
-        .expect("macro call must have a path");
-
-    assert_eq!(&path.text().to_string(), "assert_matches_inline_snapshot");
-
-    let token_tree = macro_call.last_child().unwrap();
-    assert_eq!(token_tree.kind(), SyntaxKind::TOKEN_TREE);
+    let tt = macro_visitor
+        .found
+        .expect("didnt find macro literal in ast");
 
     match mode {
         UpdateInlineSnapshotMode::Replace => {
-            let mut children: Vec<_> = token_tree.children().collect();
-            let closing_paren = children.pop().expect("must have closing paren");
-            assert_eq!(closing_paren.kind(), SyntaxKind::R_PAREN);
+            let literal = tt.into_iter().last();
 
-            let mut needle = None;
-            for node in children.into_iter().rev() {
-                match node.kind() {
-                    SyntaxKind::WHITESPACE | SyntaxKind::COMMENT => continue,
-                    SyntaxKind::STRING => {
-                        needle = Some((
-                            node.range().start().to_usize(),
-                            node.range().end().to_usize(),
-                        ));
-                        break;
-                    }
-                    _ => {
-                        panic!(
-                        "Unexpected token while parsing `assert_matches_inline_snapshot` macro call.
-                        kind: `{:?}`, text: `{:?}`",
-                        node.kind(),
-                        node.text(),
-                    );
-                    }
-                }
+            if let Some(TokenTree::Literal(literal)) = literal {
+                Ok(Range {
+                    start: LineColumn {
+                        line: literal.span().start().line,
+                        column: literal.span().start().column,
+                    },
+                    end: LineColumn {
+                        line: literal.span().end().line,
+                        column: literal.span().end().column + 1, // i can't explain what this 1 char is
+                    },
+                })
+            } else {
+                panic!("not a literal at the end of the macro? {:?}", literal)
             }
-
-            Ok(needle.expect("Could not find inline snapshot string literal in macro call"))
         }
         UpdateInlineSnapshotMode::Create => {
-            let last_paren = token_tree.last_child().unwrap();
-            let last_paren_start = last_paren.range().start();
-            Ok((last_paren_start.to_usize(), last_paren_start.to_usize()))
+            let last = tt.into_iter().last().expect("must have last tokentree");
+            let span = last.span();
+
+            Ok(Range {
+                start: LineColumn {
+                    line: span.end().line,
+                    column: span.end().column,
+                },
+                end: LineColumn {
+                    line: span.end().line,
+                    column: span.end().column,
+                },
+            })
         }
-        UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
+        _ => panic!("unreachable"),
     }
 }
 
@@ -324,4 +311,61 @@ fn escape_snapshot_string_literal(snapshot_string: &str) -> String {
     }
 
     result
+}
+
+fn split_by_range(content: String, range: &Range) -> Result<(String, String, usize), String> {
+    let mut before = String::new();
+    let mut after = String::new();
+    let mut lines_removed = 0;
+
+    for (i, line) in content.lines().enumerate() {
+        let line_number = i + 1;
+
+        match line_number {
+            n if n < range.start.line => {
+                before.push_str(&line);
+                before.push_str("\n");
+            }
+            n if n == range.start.line => {
+                let chars = line.chars().collect::<Vec<_>>();
+
+                for (i, char) in chars.into_iter().enumerate() {
+                    let column = i + 1;
+                    if column <= range.start.column {
+                        before.push(char)
+                    }
+
+                    // if it's the same line, it won't match latter pattern
+                    if n == range.end.line && column > range.end.column {
+                        after.push(char)
+                    }
+                }
+                if n == range.end.line {
+                    after.push_str("\n");
+                }
+            }
+            n if n > range.start.line && n < range.end.line => {
+                lines_removed += 1;
+            }
+            n if n == range.end.line => {
+                let chars = line.chars().collect::<Vec<_>>();
+
+                for (i, char) in chars.into_iter().enumerate() {
+                    let column = i + 1;
+
+                    if column >= range.end.column {
+                        after.push(char)
+                    }
+                }
+                after.push_str("\n");
+            }
+            n if n > range.end.line => {
+                after.push_str(&line);
+                after.push_str("\n");
+            }
+            _ => panic!("invalid range or file. Range: {:?}", range),
+        };
+    }
+
+    Ok((before, after, lines_removed))
 }

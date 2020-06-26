@@ -9,7 +9,6 @@ pub mod config;
 pub mod string_diff;
 
 mod constants;
-mod parsing;
 mod paths;
 mod types;
 mod utils;
