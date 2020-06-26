@@ -1,12 +1,14 @@
+use crate::types;
 use colored::*;
+use lazy_static::lazy_static;
 use ra_syntax::{AstNode, SyntaxKind};
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Mutex;
 
-#[derive(Clone, Copy)]
-enum UpdateInlineSnapshotMode {
-    Create,  // when there's no inline snapshot
-    Replace, // when there's an existing inline snapshot
-    NoOp,    // no need to update anything, current snapshot is valid
+lazy_static! {
+    static ref SOURCE_FILES: Mutex<HashMap<types::FilePath, SourceFile>> =
+        Mutex::new(HashMap::new());
 }
 
 pub fn matches_inline_snapshot(
@@ -38,6 +40,70 @@ pub fn matches_inline_snapshot(
             None
         }
     }
+}
+
+#[derive(Clone, Copy)]
+enum UpdateInlineSnapshotMode {
+    Create,  // when there's no inline snapshot
+    Replace, // when there's an existing inline snapshot
+    NoOp,    // no need to update anything, current snapshot is valid
+}
+// struct that represents a modification to the source code. E.g. we added/updated inline snapshot
+#[derive(Debug)]
+pub struct Patch {
+    pub offset: u32, // offset in bytes at where the patch occurred
+    pub shift: i32,  // how many bytes were added/removed after that offset
+}
+
+pub struct SourceFile {
+    pub original_content: Option<String>, // initial version of the file where line!() and column!() refer to
+    pub content: Option<String>,
+    pub patches: Vec<Patch>,
+
+    path: types::FilePath,
+}
+
+impl SourceFile {
+    fn new(path: types::FilePath) -> Self {
+        Self {
+            path,
+            content: None,
+            original_content: None,
+            patches: vec![],
+        }
+    }
+
+    // read source file content and panic if the file on disk changed
+    pub fn read_and_compare(&mut self) {
+        let read_content = std::fs::read_to_string(&self.path).expect("can't read source file");
+
+        if let Some(content) = &self.content {
+            if &read_content != content {
+                panic!("File content was modified during test run")
+            }
+        } else {
+            self.content.replace(read_content.clone());
+            self.original_content.replace(read_content);
+        }
+    }
+
+    pub fn write(&self) {
+        std::fs::write(&self.path, self.content.as_ref().unwrap()).unwrap();
+    }
+}
+
+pub fn with_source_file<F, T>(absolute_path: &str, f: F) -> Result<T, String>
+where
+    F: FnOnce(&mut SourceFile) -> Result<T, String>,
+{
+    let mut map = SOURCE_FILES.lock().expect("poisoned lock");
+    let mut source_file = map
+        .entry(absolute_path.to_string())
+        .or_insert_with(|| SourceFile::new(absolute_path.to_string()));
+
+    let result = f(&mut source_file);
+    drop(map);
+    result
 }
 
 fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
@@ -86,44 +152,72 @@ fn update_inline_snapshot(
         return Ok(());
     }
 
-    let mut file_content =
-        std::fs::read_to_string(file_path.display().to_string()).expect("can't read snapshot file");
+    with_source_file(&file_path.display().to_string(), |file| {
+        file.read_and_compare();
+        let mut content = file.content.take().expect("empty file content. read first");
 
-    let range_to_replace =
-        find_inline_snapshot_range(&file_content, line_num, column_num, mode).unwrap();
+        let original_offset = crate::parsing::line_and_column_to_offset(
+            file.original_content.as_ref().unwrap(),
+            line_num,
+            column_num,
+        )
+        .expect("failed to get char offset in the file from provided line!() and column!()")
+            as i32;
 
-    let mut rest = file_content.split_off(range_to_replace.0);
-    let before = file_content;
-    let after = rest.split_off(range_to_replace.1 - range_to_replace.0); // part we're replacing
+        let mut new_offset = original_offset;
 
-    let comma_separator = match mode {
-        UpdateInlineSnapshotMode::Create => ", ",
-        UpdateInlineSnapshotMode::Replace => "",
-        UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
-    };
+        for patch in &file.patches {
+            if patch.offset <= original_offset as u32 {
+                new_offset += patch.shift;
+            }
+        }
 
-    let new_content = format!(
-        "{before}{comma_separator} \"{to_add}\"{after}",
-        before = before,
-        comma_separator = comma_separator,
-        to_add = escape_snapshot_string_literal(to_add),
-        after = after
-    );
+        let range_to_replace =
+            find_inline_snapshot_range(&content, new_offset as usize, mode).unwrap();
 
-    std::fs::write(&file_path, new_content).unwrap();
-    Ok(())
+        let mut rest = content.split_off(range_to_replace.0);
+        let before = content;
+        let after = rest.split_off(range_to_replace.1 - range_to_replace.0); // part we're replacing
+
+        let comma_separator = match mode {
+            UpdateInlineSnapshotMode::Create => ", ",
+            UpdateInlineSnapshotMode::Replace => "",
+            UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
+        };
+
+        let replace_with = format!(
+            "{comma_separator}\"{to_add}\"",
+            comma_separator = comma_separator,
+            to_add = escape_snapshot_string_literal(to_add),
+        );
+
+        let bytes_before = range_to_replace.1 - range_to_replace.0;
+        let bytes_after = replace_with.len();
+
+        file.patches.push(Patch {
+            offset: original_offset as u32,
+            shift: bytes_after as i32 - bytes_before as i32,
+        });
+
+        let new_content = format!(
+            "{before}{replace_with}{after}",
+            before = before,
+            replace_with = replace_with,
+            after = after
+        );
+
+        file.content.replace(new_content);
+        file.write();
+
+        Ok(())
+    })
 }
 
 fn find_inline_snapshot_range(
     file_content: &str,
-    line_num: u32,
-    column_num: u32,
+    offset: usize,
     mode: UpdateInlineSnapshotMode,
 ) -> Result<(usize, usize), String> {
-    let offset = crate::parsing::line_and_column_to_offset(file_content, line_num, column_num)
-        .expect("failed to get char offset in the file from provided line!() and column!()")
-        as usize;
-
     let file = ra_syntax::File::parse(file_content);
     let mut root = file.ast().syntax();
     let mut needle = None;
@@ -141,6 +235,10 @@ fn find_inline_snapshot_range(
 
         if end < offset {
             panic!("while traversing AST, the root node end offset `{}` was lower than the offset we were looking for `{}`", end, offset);
+        }
+
+        if root.children().count() == 0 {
+            panic!("cant' find the AST node of assert_matches_inline_snapshot! macro");
         }
 
         for child in root.children() {
