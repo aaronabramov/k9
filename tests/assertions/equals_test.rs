@@ -27,7 +27,6 @@ Expected `Left` to equal `Right`:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "
     );
-
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
 }
@@ -87,7 +86,7 @@ Expected `Left` to equal `Right`:
   }
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"
+" // trailing comment after inline snap
     );
 
     // test colors
