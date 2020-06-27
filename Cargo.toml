@@ -23,4 +23,6 @@ proc-macro2 = { version = "1.0.13", default-features = false, features= ["span-l
 
 [dev-dependencies]
 anyhow = "1.0.31"
+rand = "0.7.3"
+sha2 = "0.9.1"
 strip-ansi-escapes = "0.1.0"

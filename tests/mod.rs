@@ -1,4 +1,5 @@
 mod assertions;
+mod e2e;
 
 // a macro-hack to trick test env by giving the macro with the same name that will
 // actually panic in test environment
