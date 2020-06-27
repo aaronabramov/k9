@@ -17,3 +17,5 @@ Cargo.lock
 
 /target
 #Cargo.lock
+
+/e2e_tmp_dir/
