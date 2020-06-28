@@ -10,9 +10,7 @@ fn test_assert_equal() -> Result<()> {
     assert!(assert_equal!(1, 1).is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
-    assert_matches_inline_snapshot!(
-        assertion_message(assert_equal!(2, 9)),
-        "
+    assert_matches_inline_snapshot!(assertion_message(assert_equal!(2, 9)), "
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_equal!(2, 9);
 
@@ -25,8 +23,8 @@ Expected `Left` to equal `Right`:
 + 9
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"
-    );
+");
+    assert_matches_inline_snapshot!("hello", "hello");
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
 }
