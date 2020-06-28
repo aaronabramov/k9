@@ -128,6 +128,13 @@ impl SourceFile {
     pub fn write(&self) {
         std::fs::write(&self.path, &self.content).unwrap();
     }
+
+    pub fn format(&mut self) {
+        use std::process::Command;
+        // Don't blow up if failed to format. TODO: find a way to
+        // print a message about broken rustfmt
+        let _output = Command::new("rustfmt").arg(&self.path).output();
+    }
 }
 
 pub fn with_source_file<F, T>(absolute_path: &str, f: F) -> Result<T, String>
@@ -261,6 +268,7 @@ fn update_inline_snapshots(mut file: SourceFile) {
     }
     file.content = result;
     file.write();
+    file.format();
 }
 
 fn find_inline_snapshot_range(
@@ -336,7 +344,6 @@ fn escape_snapshot_string_literal(snapshot_string: &str) -> String {
 fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, String> {
     let mut iter = ranges.iter().peekable();
 
-    dbg!(&ranges);
     // ranges must be pre-sorted
     while let Some(range) = iter.next() {
         if let Some(next_range) = iter.peek() {
