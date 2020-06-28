@@ -2,9 +2,6 @@
 see https://github.com/aaronabramov/k9 for high level description of the library
 */
 
-#[allow(clippy::unknown_clippy_lints)]
-#[allow(clippy::unnested_or_patterns)]
-#[allow(clippy::mutex_atomic)]
 pub mod assertions;
 pub mod config;
 pub mod string_diff;

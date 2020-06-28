@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use proc_macro2::{TokenStream, TokenTree};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use syn::visit::Visit;
 use syn::{Macro, PathSegment};
@@ -11,7 +12,7 @@ use syn::{Macro, PathSegment};
 lazy_static! {
     static ref SOURCE_FILES: Mutex<Option<HashMap<types::FilePath, SourceFile>>> =
         Mutex::new(Some(HashMap::new()));
-    static ref ATEXIT_HOOK_REGISTERED: Mutex<bool> = Mutex::new(false);
+    static ref ATEXIT_HOOK_REGISTERED: AtomicBool = AtomicBool::new(false);
 }
 
 pub fn matches_inline_snapshot(
@@ -160,7 +161,7 @@ fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
 
     Difference:
     {diff}
-    
+
     {update_instructions}
     ",
             string_desc = "string".red(),
@@ -194,9 +195,8 @@ extern "C" fn libc_atexit_hook() {
 }
 
 fn maybe_register_atexit_hook() {
-    let mut registered = ATEXIT_HOOK_REGISTERED.lock().expect("poisoned lock");
-    if !*registered {
-        *registered = true;
+    // https://doc.rust-lang.org/std/sync/atomic/enum.Ordering.html#variant.SeqCst
+    if !ATEXIT_HOOK_REGISTERED.swap(true, Ordering::SeqCst) {
         unsafe {
             libc::atexit(libc_atexit_hook);
         }
