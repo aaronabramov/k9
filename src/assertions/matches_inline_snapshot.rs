@@ -160,7 +160,7 @@ fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
 
     Difference:
     {diff}
-    
+
     {update_instructions}
     ",
             string_desc = "string".red(),
