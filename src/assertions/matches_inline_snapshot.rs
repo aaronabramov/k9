@@ -195,11 +195,10 @@ extern "C" fn libc_atexit_hook() {
 }
 
 fn maybe_register_atexit_hook() {
-    if !ATEXIT_HOOK_REGISTERED.swap(true, Ordering::Acquire) {
+    if !ATEXIT_HOOK_REGISTERED.swap(true, Ordering::SeqCst) {
         unsafe {
             libc::atexit(libc_atexit_hook);
         }
-        ATEXIT_HOOK_REGISTERED.store(true, Ordering::Release);
     }
 }
 
