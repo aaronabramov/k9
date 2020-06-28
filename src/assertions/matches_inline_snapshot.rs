@@ -195,6 +195,7 @@ extern "C" fn libc_atexit_hook() {
 }
 
 fn maybe_register_atexit_hook() {
+    // https://doc.rust-lang.org/std/sync/atomic/enum.Ordering.html#variant.SeqCst
     if !ATEXIT_HOOK_REGISTERED.swap(true, Ordering::SeqCst) {
         unsafe {
             libc::atexit(libc_atexit_hook);
