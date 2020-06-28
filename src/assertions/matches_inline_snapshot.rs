@@ -1,49 +1,49 @@
 use crate::types;
 use colored::*;
 use lazy_static::lazy_static;
+use proc_macro2::{TokenStream, TokenTree};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Mutex;
+use syn::visit::Visit;
+use syn::{Macro, PathSegment};
 
 lazy_static! {
-    static ref SOURCE_FILES: Mutex<HashMap<types::FilePath, SourceFile>> =
-        Mutex::new(HashMap::new());
+    static ref SOURCE_FILES: Mutex<Option<HashMap<types::FilePath, SourceFile>>> =
+        Mutex::new(Some(HashMap::new()));
+    static ref ATEXIT_HOOK_REGISTERED: Mutex<bool> = Mutex::new(false);
 }
 
 pub fn matches_inline_snapshot(
     s: String,
     snapshot: Option<&str>,
     line: u32,
-    column: u32,
+    _column: u32,
     file: &str,
 ) -> Option<String> {
     match (snapshot, crate::config::CONFIG.update_mode) {
         (Some(snapshot), false) => snapshot_matching_message(&s, snapshot),
         (None, false) => empty_snapshot_message(),
         (_, true) => {
+            let line = line as usize;
             let this_file_path = crate::paths::get_absolute_path(file);
 
-            let mode = if let Some(snapshot) = snapshot {
+            if let Some(snapshot) = snapshot {
                 let need_updating = snapshot_matching_message(&s, snapshot).is_some();
 
                 if need_updating {
-                    UpdateInlineSnapshotMode::Replace
-                } else {
-                    UpdateInlineSnapshotMode::NoOp
+                    let mode = UpdateInlineSnapshotMode::Replace;
+                    schedule_snapshot_update(this_file_path, line, &s, mode).unwrap();
                 }
             } else {
-                UpdateInlineSnapshotMode::Create
+                let mode = UpdateInlineSnapshotMode::Create;
+                schedule_snapshot_update(this_file_path, line, &s, mode).unwrap();
             };
 
-            update_inline_snapshot(this_file_path, line, column, &s, mode).unwrap();
             None
         }
     }
 }
-
-use proc_macro2::{TokenStream, TokenTree};
-use syn::visit::Visit;
-use syn::{Macro, PathSegment};
 
 #[derive(Debug)]
 struct MacroVisitor {
@@ -64,11 +64,10 @@ impl<'ast> Visit<'ast> for MacroVisitor {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum UpdateInlineSnapshotMode {
     Create,  // when there's no inline snapshot
     Replace, // when there's an existing inline snapshot
-    NoOp,    // no need to update anything, current snapshot is valid
 }
 // struct that represents a modification to the source code. E.g. we added/updated inline snapshot
 #[derive(Debug)]
@@ -89,40 +88,52 @@ struct Range {
     end: LineColumn,
 }
 
-pub struct SourceFile {
-    pub original_content: Option<String>, // initial version of the file where line!() and column!() refer to
-    pub content: Option<String>,
-    pub patches: Vec<Patch>,
+#[derive(Debug)]
+pub struct InlineSnapshotUpdate {
+    range: Range,
+    new_value: String,
+    mode: UpdateInlineSnapshotMode,
+}
 
-    path: types::FilePath,
+#[derive(Debug)]
+pub struct SourceFile {
+    pub content: String,
+    pub updates: Vec<InlineSnapshotUpdate>,
+    pub path: types::FilePath,
 }
 
 impl SourceFile {
     fn new(path: types::FilePath) -> Self {
+        let content = Self::read(&path);
         Self {
             path,
-            content: None,
-            original_content: None,
-            patches: vec![],
+            content,
+            updates: vec![],
         }
     }
 
     // read source file content and panic if the file on disk changed
-    pub fn read_and_compare(&mut self) {
-        let read_content = std::fs::read_to_string(&self.path).expect("can't read source file");
+    pub fn read_and_compare(&self) {
+        let read_content = Self::read(&self.path);
 
-        if let Some(content) = &self.content {
-            if &read_content != content {
-                panic!("File content was modified during test run")
-            }
-        } else {
-            self.content.replace(read_content.clone());
-            self.original_content.replace(read_content);
+        if read_content != self.content {
+            panic!("File content was modified during test run")
         }
     }
 
+    pub fn read(absolute_path: &str) -> String {
+        std::fs::read_to_string(absolute_path).expect("can't read source file")
+    }
+
     pub fn write(&self) {
-        std::fs::write(&self.path, self.content.as_ref().unwrap()).unwrap();
+        std::fs::write(&self.path, &self.content).unwrap();
+    }
+
+    pub fn format(&mut self) {
+        use std::process::Command;
+        // Don't blow up if failed to format. TODO: find a way to
+        // print a message about broken rustfmt
+        let _output = Command::new("rustfmt").arg(&self.path).output();
     }
 }
 
@@ -132,12 +143,12 @@ where
 {
     let mut map = SOURCE_FILES.lock().expect("poisoned lock");
     let mut source_file = map
+        .as_mut()
+        .unwrap()
         .entry(absolute_path.to_string())
         .or_insert_with(|| SourceFile::new(absolute_path.to_string()));
 
-    let result = f(&mut source_file);
-    drop(map);
-    result
+    f(&mut source_file)
 }
 
 fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
@@ -174,85 +185,102 @@ but that assertion did not have any inline snapshots.
     ))
 }
 
-fn update_inline_snapshot(
+extern "C" fn libc_atexit_hook() {
+    let files = SOURCE_FILES.lock().expect("poisoned lock").take().unwrap();
+
+    for (_path, file) in files {
+        update_inline_snapshots(file);
+    }
+}
+
+fn maybe_register_atexit_hook() {
+    let mut registered = ATEXIT_HOOK_REGISTERED.lock().expect("poisoned lock");
+    if !*registered {
+        *registered = true;
+        unsafe {
+            libc::atexit(libc_atexit_hook);
+        }
+    }
+}
+
+fn schedule_snapshot_update(
     file_path: PathBuf,
-    original_line_num: u32,
-    original_column_num: u32,
+    original_line_num: usize,
     to_add: &str,
     mode: UpdateInlineSnapshotMode,
 ) -> Result<(), String> {
-    if let UpdateInlineSnapshotMode::NoOp = mode {
-        // no need to update anything, snapshot is up to date
-        return Ok(());
-    }
+    maybe_register_atexit_hook();
 
     with_source_file(&file_path.display().to_string(), |file| {
-        file.read_and_compare();
-        let content = file.content.take().expect("empty file content. read first");
+        let range = find_inline_snapshot_range(&file.content, original_line_num, mode).unwrap();
 
-        let mut new_line_num = original_line_num as i32;
-        // for now we assume that columns don't change (unless there are two snapshots on the same line)
-        let new_column_num = original_column_num;
-
-        for patch in &file.patches {
-            if patch.location.line <= original_line_num as usize {
-                new_line_num += patch.line_shift;
-            }
-        }
-
-        let range_to_replace =
-            find_inline_snapshot_range(&content, new_line_num as u32, new_column_num, mode)
-                .unwrap();
-
-        let (before, after, lines_removed) = split_by_range(content, &range_to_replace).unwrap();
-
-        let comma_separator = match mode {
-            UpdateInlineSnapshotMode::Create => ", ",
-            UpdateInlineSnapshotMode::Replace => "",
-            UpdateInlineSnapshotMode::NoOp => panic!("unreachable"),
-        };
-
-        let replace_with = format!(
-            "{comma_separator}\"{to_add}\"",
-            comma_separator = comma_separator,
-            to_add = escape_snapshot_string_literal(to_add),
-        );
-
-        let new_lines = replace_with.lines().count() - 1; // we had an existing line
-
-        file.patches.push(Patch {
-            location: LineColumn {
-                line: original_line_num as usize,
-                column: original_column_num as usize,
-            },
-            line_shift: new_lines as i32 - lines_removed as i32,
+        file.updates.push(InlineSnapshotUpdate {
+            range,
+            new_value: to_add.to_string(),
+            mode,
         });
-
-        let new_content = format!(
-            "{before}{replace_with}{after}",
-            before = before,
-            replace_with = replace_with,
-            after = after
-        );
-
-        file.content.replace(new_content);
-        file.write();
 
         Ok(())
     })
 }
 
+fn update_inline_snapshots(mut file: SourceFile) {
+    file.read_and_compare();
+    let content = file.content.clone();
+
+    let mut updates = file.updates.iter().collect::<Vec<_>>();
+    updates.sort_by(|a, b| a.range.start.line.cmp(&b.range.start.line));
+
+    let parts = split_by_ranges(content, updates.iter().map(|u| &u.range).collect()).unwrap();
+
+    assert_eq!(parts.len(), updates.len() + 1);
+
+    let mut parts_iter = parts.into_iter();
+    let mut updates_iter = updates.into_iter();
+    let mut result = String::new();
+
+    loop {
+        match (parts_iter.next(), updates_iter.next()) {
+            (Some(part), Some(update)) => {
+                result.push_str(&part);
+
+                let comma_separator = match update.mode {
+                    UpdateInlineSnapshotMode::Create => ", ",
+                    UpdateInlineSnapshotMode::Replace => "",
+                };
+
+                let update_string = format!(
+                    "{comma_separator}\"{to_add}\"",
+                    comma_separator = comma_separator,
+                    to_add = escape_snapshot_string_literal(&update.new_value),
+                );
+
+                result.push_str(&update_string);
+            }
+            (Some(part), None) => {
+                result.push_str(&part);
+            }
+            (None, None) => {
+                break;
+            }
+            _ => panic!("unreachable"),
+        }
+    }
+    file.content = result;
+    file.write();
+    file.format();
+}
+
 fn find_inline_snapshot_range(
     file_content: &str,
-    line_num: u32,
-    _column_num: u32,
+    line_num: usize,
     mode: UpdateInlineSnapshotMode,
 ) -> Result<Range, String> {
     let syntax = syn::parse_file(file_content).expect("Unable to parse file");
 
     let mut macro_visitor = MacroVisitor {
         found: None,
-        line: line_num as usize,
+        line: line_num,
     };
 
     macro_visitor.visit_file(&syntax);
@@ -269,11 +297,12 @@ fn find_inline_snapshot_range(
                 Ok(Range {
                     start: LineColumn {
                         line: literal.span().start().line,
-                        column: literal.span().start().column,
+                        // columns might be 0 based? i'm not sure
+                        column: literal.span().start().column + 1,
                     },
                     end: LineColumn {
                         line: literal.span().end().line,
-                        column: literal.span().end().column + 1, // i can't explain what this 1 char is
+                        column: literal.span().end().column + 1,
                     },
                 })
             } else {
@@ -287,15 +316,14 @@ fn find_inline_snapshot_range(
             Ok(Range {
                 start: LineColumn {
                     line: span.end().line,
-                    column: span.end().column,
+                    column: span.end().column + 1,
                 },
                 end: LineColumn {
                     line: span.end().line,
-                    column: span.end().column,
+                    column: span.end().column + 1,
                 },
             })
         }
-        _ => panic!("unreachable"),
     }
 }
 
@@ -313,59 +341,75 @@ fn escape_snapshot_string_literal(snapshot_string: &str) -> String {
     result
 }
 
-fn split_by_range(content: String, range: &Range) -> Result<(String, String, usize), String> {
-    let mut before = String::new();
-    let mut after = String::new();
-    let mut lines_removed = 0;
+fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, String> {
+    let mut iter = ranges.iter().peekable();
+
+    // ranges must be pre-sorted
+    while let Some(range) = iter.next() {
+        if let Some(next_range) = iter.peek() {
+            if range.end.line >= next_range.start.line {
+                panic!("overlapping ranges! can be only one inline snapshot macro per line");
+            }
+        }
+    }
+
+    let mut ranges_iter = ranges.into_iter();
+    let mut chunks = vec![];
+    let mut next_chunk = String::new();
+    let mut next_range = ranges_iter.next();
 
     for (i, line) in content.lines().enumerate() {
         let line_number = i + 1;
 
-        match line_number {
-            n if n < range.start.line => {
-                before.push_str(&line);
-                before.push_str("\n");
-            }
-            n if n == range.start.line => {
-                let chars = line.chars().collect::<Vec<_>>();
-
-                for (i, char) in chars.into_iter().enumerate() {
-                    let column = i + 1;
-                    if column <= range.start.column {
-                        before.push(char)
-                    }
-
-                    // if it's the same line, it won't match latter pattern
-                    if n == range.end.line && column > range.end.column {
-                        after.push(char)
-                    }
+        if let Some(range) = next_range {
+            match line_number {
+                n if n < range.start.line => {
+                    next_chunk.push_str(&line);
+                    next_chunk.push_str("\n");
                 }
-                if n == range.end.line {
-                    after.push_str("\n");
-                }
-            }
-            n if n > range.start.line && n < range.end.line => {
-                lines_removed += 1;
-            }
-            n if n == range.end.line => {
-                let chars = line.chars().collect::<Vec<_>>();
+                n if n == range.start.line => {
+                    let chars = line.chars().collect::<Vec<_>>();
 
-                for (i, char) in chars.into_iter().enumerate() {
-                    let column = i + 1;
+                    let mut chars_before = chars;
+                    let mut rest = chars_before.split_off(range.start.column - 1);
+                    let str_before: String = chars_before.iter().collect();
+                    next_chunk.push_str(&str_before);
 
-                    if column >= range.end.column {
-                        after.push(char)
+                    // The range is in a single line
+                    if n == range.end.line {
+                        let chars_after = rest.split_off(range.end.column - 1 - chars_before.len());
+                        let str_after: String = chars_after.iter().collect();
+
+                        chunks.push(next_chunk);
+                        next_chunk = String::new();
+                        next_range = ranges_iter.next();
+
+                        next_chunk.push_str(&str_after);
+                        next_chunk.push_str("\n");
                     }
                 }
-                after.push_str("\n");
-            }
-            n if n > range.end.line => {
-                after.push_str(&line);
-                after.push_str("\n");
-            }
-            _ => panic!("invalid range or file. Range: {:?}", range),
-        };
+                n if n > range.start.line && n < range.end.line => {}
+                n if n == range.end.line => {
+                    chunks.push(next_chunk);
+                    next_chunk = String::new();
+                    next_range = ranges_iter.next();
+
+                    let mut chars = line.chars().collect::<Vec<_>>();
+                    let after_chars = chars.split_off(range.end.column - 1);
+                    let after_str: String = after_chars.iter().collect();
+                    next_chunk.push_str(&after_str);
+                    next_chunk.push_str("\n");
+                }
+                _ => panic!(
+                    "invalid range or file. Line: `{}` Range: {:?}",
+                    line_number, range
+                ),
+            };
+        } else {
+            next_chunk.push_str(&line);
+            next_chunk.push_str("\n");
+        }
     }
-
-    Ok((before, after, lines_removed))
+    chunks.push(next_chunk);
+    Ok(chunks)
 }

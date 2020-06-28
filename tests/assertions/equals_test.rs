@@ -27,6 +27,7 @@ Expected `Left` to equal `Right`:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "
     );
+    assert_matches_inline_snapshot!("hello", "hello");
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
     Ok(())
 }
