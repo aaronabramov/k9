@@ -39,7 +39,7 @@ fn passing() {}
     assert!(!test_run.success);
 
     assert_matches_inline_snapshot!(
-        format!("{:?}", test_run.test_cases), 
+        format!("{:?}", test_run.test_cases),
         "{\"basic_tests::inline_snapshot\": TestCaseResult { status: Fail }, \"basic_tests::passing\": TestCaseResult { status: Pass }}"
     );
     let runner = p.run_tests().update_snapshots(true).build().unwrap();
@@ -49,7 +49,7 @@ fn passing() {}
     // Inline snapshot must be updated in the source.
     // NOTE: we're using assert_equal! so we don't test inline snapshot feature
     // using inline snapshots macro. If it's broken, the test could be broken as well
-    // and will give false pasitive.
+    // and will give false positive.
     assert_equal!(
         p.read_file("basic_tests.rs")?.as_str(),
         "use k9::*;
