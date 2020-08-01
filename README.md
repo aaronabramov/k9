@@ -21,6 +21,7 @@
 - `assert_matches_regex`
 - `assert_err_matches_regex`
 - `assert_matches_snapshot`
+- `assert_matches_inline_snapshot`
 - `assert_ok`
 - `assert_err`
 
