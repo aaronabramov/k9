@@ -143,6 +143,7 @@ Expected `Left` to equal `Right`:
 
 #[test]
 fn collapsed_output() {
+    super::setup_test_env();
     assert_matches_inline_snapshot!(
         assertion_message(assert_equal!(vec![1, 2], vec![1, 3])),
         "
