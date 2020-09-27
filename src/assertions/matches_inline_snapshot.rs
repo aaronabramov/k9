@@ -369,7 +369,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
             match line_number {
                 n if n < range.start.line => {
                     next_chunk.push_str(&line);
-                    next_chunk.push_str("\n");
+                    next_chunk.push('\n');
                 }
                 n if n == range.start.line => {
                     let chars = line.chars().collect::<Vec<_>>();
@@ -389,7 +389,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
                         next_range = ranges_iter.next();
 
                         next_chunk.push_str(&str_after);
-                        next_chunk.push_str("\n");
+                        next_chunk.push('\n');
                     }
                 }
                 n if n > range.start.line && n < range.end.line => {}
@@ -402,7 +402,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
                     let after_chars = chars.split_off(range.end.column - 1);
                     let after_str: String = after_chars.iter().collect();
                     next_chunk.push_str(&after_str);
-                    next_chunk.push_str("\n");
+                    next_chunk.push('\n');
                 }
                 _ => panic!(
                     "invalid range or file. Line: `{}` Range: {:?}",
@@ -411,7 +411,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
             };
         } else {
             next_chunk.push_str(&line);
-            next_chunk.push_str("\n");
+            next_chunk.push('\n');
         }
     }
     chunks.push(next_chunk);
