@@ -45,7 +45,7 @@ pub fn snap_internal<T: std::fmt::Display>(
         .display()
         .to_string();
 
-    let absolute_snap_path = crate::paths::get_absolute_path(&relative_snap_path);
+    let absolute_snap_path = crate::paths::get_absolute_path(&relative_snap_path).unwrap();
 
     let string_desc = "string".red();
     let snapshot_desc = "snapshot".green();
