@@ -1,4 +1,5 @@
 use crate::types;
+use anyhow::{Context, Result};
 use colored::*;
 use lazy_static::lazy_static;
 use proc_macro2::{TokenStream, TokenTree};
@@ -27,7 +28,7 @@ pub fn matches_inline_snapshot(
         (None, false) => empty_snapshot_message(),
         (_, true) => {
             let line = line as usize;
-            let this_file_path = crate::paths::get_absolute_path(file);
+            let this_file_path = crate::paths::get_absolute_path(file).unwrap();
 
             if let Some(snapshot) = snapshot {
                 let need_updating = snapshot_matching_message(&s, snapshot).is_some();
@@ -104,26 +105,28 @@ pub struct SourceFile {
 }
 
 impl SourceFile {
-    fn new(path: types::FilePath) -> Self {
-        let content = Self::read(&path);
-        Self {
+    fn new(path: types::FilePath) -> Result<Self> {
+        let content = Self::read(&path)?;
+        Ok(Self {
             path,
             content,
             updates: vec![],
-        }
+        })
     }
 
     // read source file content and panic if the file on disk changed
-    pub fn read_and_compare(&self) {
-        let read_content = Self::read(&self.path);
+    pub fn read_and_compare(&self) -> Result<()> {
+        let read_content = Self::read(&self.path)?;
 
         if read_content != self.content {
-            panic!("File content was modified during test run")
+            anyhow::bail!("File content was modified during test run");
         }
+        Ok(())
     }
 
-    pub fn read(absolute_path: &str) -> String {
-        std::fs::read_to_string(absolute_path).expect("can't read source file")
+    pub fn read(absolute_path: &str) -> Result<String> {
+        std::fs::read_to_string(absolute_path)
+            .with_context(|| format!("Can't read source file. File path: {}", absolute_path))
     }
 
     pub fn write(&self) {
@@ -138,16 +141,16 @@ impl SourceFile {
     }
 }
 
-pub fn with_source_file<F, T>(absolute_path: &str, f: F) -> Result<T, String>
+pub fn with_source_file<F, T>(absolute_path: &str, f: F) -> Result<T>
 where
-    F: FnOnce(&mut SourceFile) -> Result<T, String>,
+    F: FnOnce(&mut SourceFile) -> Result<T>,
 {
     let mut map = SOURCE_FILES.lock().expect("poisoned lock");
     let mut source_file = map
         .as_mut()
         .unwrap()
         .entry(absolute_path.to_string())
-        .or_insert_with(|| SourceFile::new(absolute_path.to_string()));
+        .or_insert_with(|| SourceFile::new(absolute_path.to_string()).unwrap());
 
     f(&mut source_file)
 }
@@ -190,7 +193,7 @@ extern "C" fn libc_atexit_hook() {
     let files = SOURCE_FILES.lock().expect("poisoned lock").take().unwrap();
 
     for (_path, file) in files {
-        update_inline_snapshots(file);
+        update_inline_snapshots(file).expect("failed to update snapshots");
     }
 }
 
@@ -208,7 +211,7 @@ fn schedule_snapshot_update(
     original_line_num: usize,
     to_add: &str,
     mode: UpdateInlineSnapshotMode,
-) -> Result<(), String> {
+) -> Result<()> {
     maybe_register_atexit_hook();
 
     with_source_file(&file_path.display().to_string(), |file| {
@@ -224,8 +227,8 @@ fn schedule_snapshot_update(
     })
 }
 
-fn update_inline_snapshots(mut file: SourceFile) {
-    file.read_and_compare();
+fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
+    file.read_and_compare()?;
     let content = file.content.clone();
 
     let mut updates = file.updates.iter().collect::<Vec<_>>();
@@ -269,6 +272,7 @@ fn update_inline_snapshots(mut file: SourceFile) {
     file.content = result;
     file.write();
     file.format();
+    Ok(())
 }
 
 fn find_inline_snapshot_range(
@@ -365,7 +369,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
             match line_number {
                 n if n < range.start.line => {
                     next_chunk.push_str(&line);
-                    next_chunk.push_str("\n");
+                    next_chunk.push('\n');
                 }
                 n if n == range.start.line => {
                     let chars = line.chars().collect::<Vec<_>>();
@@ -385,7 +389,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
                         next_range = ranges_iter.next();
 
                         next_chunk.push_str(&str_after);
-                        next_chunk.push_str("\n");
+                        next_chunk.push('\n');
                     }
                 }
                 n if n > range.start.line && n < range.end.line => {}
@@ -398,7 +402,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
                     let after_chars = chars.split_off(range.end.column - 1);
                     let after_str: String = after_chars.iter().collect();
                     next_chunk.push_str(&after_str);
-                    next_chunk.push_str("\n");
+                    next_chunk.push('\n');
                 }
                 _ => panic!(
                     "invalid range or file. Line: `{}` Range: {:?}",
@@ -407,7 +411,7 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
             };
         } else {
             next_chunk.push_str(&line);
-            next_chunk.push_str("\n");
+            next_chunk.push('\n');
         }
     }
     chunks.push(next_chunk);

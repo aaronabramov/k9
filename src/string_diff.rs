@@ -9,7 +9,7 @@ pub fn colored_diff(left: &str, right: &str) -> Option<String> {
     }
 
     let lines = lines(left, right);
-    result.push_str("\n");
+    result.push('\n');
     for line in lines {
         match line {
             Result::Left(l) => {
