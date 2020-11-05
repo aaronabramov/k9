@@ -50,13 +50,13 @@ fn passing() {}
     // NOTE: we're using assert_equal! so we don't test inline snapshot feature
     // using inline snapshots macro. If it's broken, the test could be broken as well
     // and will give false positive.
-    assert_equal!(
+    assert_eq!(
         p.read_file("basic_tests.rs")?.as_str(),
         "use k9::*;
 
 #[test]
 fn inline_snapshot() {
-    assert_matches_inline_snapshot!(format!(\"{}\", std::f64::consts::E), \"2.718281828459045\");
+    assert_matches_inline_snapshot!(format!(\"{}\", std::f64::consts::E), r##\"2.718281828459045\"##);
 }
 
 #[test]

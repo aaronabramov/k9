@@ -253,9 +253,9 @@ fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
                 };
 
                 let update_string = format!(
-                    "{comma_separator}\"{to_add}\"",
+                    "{comma_separator}r##\"{to_add}\"##",
                     comma_separator = comma_separator,
-                    to_add = escape_snapshot_string_literal(&update.new_value),
+                    to_add = &update.new_value,
                 );
 
                 result.push_str(&update_string);
@@ -329,20 +329,6 @@ fn find_inline_snapshot_range(
             })
         }
     }
-}
-
-fn escape_snapshot_string_literal(snapshot_string: &str) -> String {
-    let mut result = String::with_capacity(snapshot_string.len());
-
-    // there must be a more performant way to do it, but generally snapshot should be pretty light
-    for c in snapshot_string.chars() {
-        match c {
-            '"' => result.push_str(r#"\""#),
-            _ => result.push(c),
-        }
-    }
-
-    result
 }
 
 fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, String> {
