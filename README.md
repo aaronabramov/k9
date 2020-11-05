@@ -153,3 +153,35 @@ serialized a new `response` object into string and compare it with the previous 
 During this step you can examine whether the changes to the response object are intended or whether it's a newly introduced bug that needs to be fixed.
 
 Once the snapshot looks correct, it can be updated again using `K9_UPDATE_SNAPSHOTS=1` variable.
+
+## Inline Snapshots
+
+Sometimes `assert_matches_snapshot!` has its limitations, for example, there can't be more than one snapshot per test, snapshot file needs to be opened separately to see its content and sometimes too many files are hard to maintain.
+
+To simplify things a little bit, there is `assert_matches_inline_snapshot!` macro. Instead of storing snapshot string in a separate file it will update rust source file directly with a string literal containing snapshot. E.g.
+
+```rust
+use k9::*;
+
+assert_matches_inline_snapshot!(dbg!("hello".chars().rev().collect::<String>());
+```
+
+This will fail with an error saying that snapshot is missing
+But running
+```sh
+K9_UPDATE_SNAPSHOTS=1 cargo test
+```
+
+will update the source code directly to:
+
+
+```rust
+use k9::*;
+
+assert_matches_inline_snapshot!(dbg!("hello".chars().rev().collect::<String>(), "olleh);
+```
+
+And next time `cargo test` is run the tests will pass.
+
+
+![inline_snapshot_demo](https://user-images.githubusercontent.com/940133/85349610-8ff4db80-b4c4-11ea-97c6-2d6b04c7c9b0.gif)
