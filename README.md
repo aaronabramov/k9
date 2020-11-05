@@ -158,7 +158,7 @@ Once the snapshot looks correct, it can be updated again using `K9_UPDATE_SNAPSH
 
 Sometimes `assert_matches_snapshot!` has its limitations, for example, there can't be more than one snapshot per test, snapshot file needs to be opened separately to see its content and sometimes too many files are hard to maintain.
 
-To simplify things a little bit, there is `assert_matches_inline_snapshot!` macro. Instead of storing snapshot string in a separate file it will update rust source file directly with a string literal containing snapshot. E.g.
+To simplify things a little bit, there is `assert_matches_inline_snapshot!` macro. Instead of storing snapshot string in a separate file it will update rust source file directly with a string literal containing snapshot.
 
 ```rust
 use k9::*;
@@ -166,8 +166,8 @@ use k9::*;
 assert_matches_inline_snapshot!(dbg!("hello".chars().rev().collect::<String>());
 ```
 
-This will fail with an error saying that snapshot is missing
-But running
+This will fail with an error saying that snapshot is missing. But running
+
 ```sh
 K9_UPDATE_SNAPSHOTS=1 cargo test
 ```
