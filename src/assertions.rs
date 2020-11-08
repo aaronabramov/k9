@@ -122,19 +122,20 @@ macro_rules! assert_equal {
             None,
         )
     }};
-    ($left:expr, $right:expr, $description:expr) => {{
+    ($left:expr, $right:expr, $($description:expr),*) => {{
         use $crate::__macros__::colored::*;
+        let description = format!($( $description ),*);
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
             stringify!($right).green(),
-            stringify!($description).dimmed(),
+            stringify!($( $description ),* ).dimmed(),
         );
         $crate::assertions::make_assertion(
             "assert_equal",
             args_str,
             $crate::assertions::equal::assert_equal($left, $right),
-            Some(&$description),
+            Some(&description),
         )
     }};
 }

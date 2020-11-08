@@ -8,6 +8,8 @@ fn test_assert_equal() -> Result<()> {
     super::setup_test_env();
 
     assert!(assert_equal!(1, 1).is_none());
+    assert!(assert_equal!(1, 1, "some description").is_none());
+    assert!(assert_equal!(1, 1, "some formatted debcription {} {:?}", 1, "dogs").is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
     assert_matches_inline_snapshot!(
@@ -123,12 +125,12 @@ Expected `[31mLeft[0m` to equal `[32mRight[0m`:
 fn with_context() {
     super::setup_test_env();
     assert_matches_inline_snapshot!(
-        assertion_message(assert_equal!(1, 2, "Expected those two things to be equal")),
-        "
+        assertion_message(assert_equal!(1, 2, "Expected {} to equal {}", 1, 2)),
+        r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-assert_equal!(1, 2, \"Expected those two things to be equal\");
+assert_equal!(1, 2, "Expected {} to equal {}", 1, 2);
 
-Expected those two things to be equal
+Expected 1 to equal 2
 
 
 Expected `Left` to equal `Right`:
@@ -137,6 +139,6 @@ Expected `Left` to equal `Right`:
 + 2
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"
+"##
     );
 }
