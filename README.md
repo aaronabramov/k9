@@ -9,7 +9,7 @@
 [docs-badge]: https://docs.rs/k9/badge.svg
 [docs-url]: https://docs.rs/k9
 
-![k9_header](https://user-images.githubusercontent.com/940133/83342567-ae492c00-a2b6-11ea-8ccd-bb3e67df21f9.jpg)
+![k9_header](https://user-images.githubusercontent.com/940133/98482607-2140c200-21c8-11eb-84f0-af488323a49a.png)
 
 ### Available macros
 
