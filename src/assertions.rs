@@ -115,10 +115,11 @@ macro_rules! assert_equal {
             stringify!($left).red(),
             stringify!($right).green(),
         );
+        let fail = &$left != &$right;
         $crate::assertions::make_assertion(
             "assert_equal",
             args_str,
-            $crate::assertions::equal::assert_equal($left, $right),
+            $crate::assertions::equal::assert_equal($left, $right, fail),
             None,
         )
     }};
@@ -131,10 +132,11 @@ macro_rules! assert_equal {
             stringify!($right).green(),
             stringify!($( $description ),* ).dimmed(),
         );
+        let fail = &$left != &$right;
         $crate::assertions::make_assertion(
             "assert_equal",
             args_str,
-            $crate::assertions::equal::assert_equal($left, $right),
+            $crate::assertions::equal::assert_equal($left, $right, fail),
             Some(&description),
         )
     }};

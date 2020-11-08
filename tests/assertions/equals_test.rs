@@ -8,6 +8,7 @@ fn test_assert_equal() -> Result<()> {
     super::setup_test_env();
 
     assert!(assert_equal!(1, 1).is_none());
+    assert!(assert_equal!(vec![1, 2, 3], [1, 2, 3]).is_none());
     assert!(assert_equal!(1, 1, "some description").is_none());
     assert!(assert_equal!(1, 1, "some formatted debcription {} {:?}", 1, "dogs").is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
@@ -123,20 +124,27 @@ Expected `[31mLeft[0m` to equal `[32mRight[0m`:
 
 #[test]
 fn with_context() {
+    let a = vec![1, 2, 3];
+    let b = [1, 2, 99];
+
     super::setup_test_env();
     assert_matches_inline_snapshot!(
-        assertion_message(assert_equal!(1, 2, "Expected {} to equal {}", 1, 2)),
+        assertion_message(assert_equal!(a, b, "Expected {:?} to equal {:?}", a, b)),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-assert_equal!(1, 2, "Expected {} to equal {}", 1, 2);
+assert_equal!(a, b, "Expected {:?} to equal {:?}", a, b);
 
-Expected 1 to equal 2
+Expected [1, 2, 3] to equal [1, 2, 99]
 
 
 Expected `Left` to equal `Right`:
 
-- 1
-+ 2
+  [
+      1,
+      2,
+-     3,
++     99,
+  ]
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "##
