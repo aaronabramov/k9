@@ -1,3 +1,4 @@
+mod custom_comparison_formatters_test;
 mod equals_test;
 
 #[cfg(feature = "regex")]

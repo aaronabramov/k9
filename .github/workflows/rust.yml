@@ -39,6 +39,10 @@ jobs:
       - name: Run tests (without default features)
         run: cargo test --no-default-features --verbose
 
+      - name: Run tests for custom_comparison_formatters (nightly only)
+        run: cargo test --features custom_comparison_formatters
+        if: ${{ matrix.rust == 'nightly' }}
+
       - name: Run smoke test against latest published version
         run: cargo test --manifest-path=./smoke_test/Cargo.toml
 
