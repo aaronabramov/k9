@@ -8,6 +8,10 @@ pub struct Config {
     pub terminal_width_override: AtomicUsize,
     // Snapshot update mode
     pub update_mode: bool,
+    /// Whether this binary is built with buck
+    pub built_with_buck: bool,
+    /// Whether we should always enable colored output
+    pub force_enable_colors: bool,
 }
 
 lazy_static! {
@@ -15,6 +19,8 @@ lazy_static! {
         assertions_will_panic: AtomicBool::new(true),
         terminal_width_override: AtomicUsize::new(0),
         update_mode: is_update_mode(),
+        built_with_buck: is_buck_build(),
+        force_enable_colors: should_force_enable_colors(),
     };
 }
 
@@ -36,12 +42,15 @@ pub fn terminal_width_override() -> usize {
     CONFIG.terminal_width_override.load(Ordering::Relaxed)
 }
 
+fn is_buck_build() -> bool {
+    std::env::var("BUCK_BUILD_ID").is_ok()
+}
+
 fn is_update_mode() -> bool {
     // If runtime ENV variable is set, it takes precedence
     let runtime_var = std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true);
-    let buck_build_id_present = std::env::var("BUCK_BUILD_ID").is_ok();
 
-    if !runtime_var && buck_build_id_present {
+    if !runtime_var && is_buck_build() {
         // If not, we'll also check compile time variable. This is going to be the case with `buck`
         // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
         //
@@ -53,4 +62,12 @@ fn is_update_mode() -> bool {
     }
 
     runtime_var
+}
+
+fn should_force_enable_colors() -> bool {
+    // If we are running with buck, stdout will not be a tty and we'll lose
+    // colored output. Detect that case so we can force enable colored
+    // output.
+    // If this is not set, fall back to the usual `colored` behavior.
+    is_buck_build()
 }

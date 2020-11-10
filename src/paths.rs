@@ -3,10 +3,8 @@ use anyhow::Result;
 use std::path::{Component, Path, PathBuf};
 
 pub fn get_project_root_path() -> PathBuf {
-    let buck_build_id_present = std::env::var("BUCK_BUILD_ID").is_ok();
-
     // If there's a buck build id we'll grab the `pwd`, because we're probably running `buck test` from the root
-    if buck_build_id_present {
+    if crate::config::CONFIG.built_with_buck {
         let pwd = std::env::var("PWD").expect(
             "
 `BUCK_BUILD_ID` enviroment variable was present, which means this project is being built with

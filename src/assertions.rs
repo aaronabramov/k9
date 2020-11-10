@@ -86,6 +86,12 @@ pub fn make_assertion(
     }
 }
 
+pub fn initialize_colors() {
+    if crate::config::CONFIG.force_enable_colors {
+        colored::control::set_override(true);
+    }
+}
+
 /// Asserts that two passed arguments are equal.
 /// panics if they are not
 ///
@@ -110,6 +116,7 @@ pub fn make_assertion(
 macro_rules! assert_equal {
     ($left:expr, $right:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -125,6 +132,7 @@ macro_rules! assert_equal {
     }};
     ($left:expr, $right:expr, $($description:expr),*) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let description = format!($( $description ),*);
         let args_str = format!(
             "{}, {}, {}",
@@ -154,6 +162,7 @@ macro_rules! assert_equal {
 macro_rules! assert_greater_than {
     ($left:expr, $right:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -168,6 +177,7 @@ macro_rules! assert_greater_than {
     }};
     ($left:expr, $right:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
@@ -196,6 +206,7 @@ macro_rules! assert_greater_than {
 macro_rules! assert_greater_than_or_equal {
     ($left:expr, $right:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -210,6 +221,7 @@ macro_rules! assert_greater_than_or_equal {
     }};
     ($left:expr, $right:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
@@ -237,6 +249,7 @@ macro_rules! assert_greater_than_or_equal {
 macro_rules! assert_lesser_than {
     ($left:expr, $right:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -251,6 +264,7 @@ macro_rules! assert_lesser_than {
     }};
     ($left:expr, $right:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
@@ -279,6 +293,7 @@ macro_rules! assert_lesser_than {
 macro_rules! assert_lesser_than_or_equal {
     ($left:expr, $right:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -293,6 +308,7 @@ macro_rules! assert_lesser_than_or_equal {
     }};
     ($left:expr, $right:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($left).red(),
@@ -322,6 +338,7 @@ macro_rules! assert_lesser_than_or_equal {
 macro_rules! assert_matches_regex {
     ($s:expr, $regex:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!("{}, {}", stringify!($s).red(), stringify!($regex).green());
         $crate::assertions::make_assertion(
             "assert_matches_regex",
@@ -332,6 +349,7 @@ macro_rules! assert_matches_regex {
     }};
     ($s:expr, $regex:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($s).red(),
@@ -372,6 +390,7 @@ macro_rules! assert_matches_regex {
 macro_rules! assert_err_matches_regex {
     ($err:expr, $regex:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!("{}, {}", stringify!($err).red(), stringify!($regex).green(),);
         $crate::assertions::make_assertion(
             "assert_err_matches_regex",
@@ -382,6 +401,7 @@ macro_rules! assert_err_matches_regex {
     }};
     ($s:expr, $regex:expr, $context:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($err).red(),
@@ -425,6 +445,7 @@ macro_rules! assert_err_matches_regex {
 macro_rules! assert_matches_snapshot {
     ($to_snap:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let line = line!();
         let column = column!();
         let file = file!();
@@ -438,6 +459,7 @@ macro_rules! assert_matches_snapshot {
     }};
     ($to_snap:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let line = line!();
         let column = column!();
         let file = file!();
@@ -459,6 +481,7 @@ macro_rules! assert_matches_snapshot {
 macro_rules! assert_matches_inline_snapshot {
     ($to_snap:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let line = line!();
         let column = column!();
         let file = file!();
@@ -475,6 +498,7 @@ macro_rules! assert_matches_inline_snapshot {
     }};
     ($to_snap:expr, $inline_snap:literal) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let line = line!();
         let column = column!();
         let file = file!();
@@ -511,6 +535,7 @@ macro_rules! assert_matches_inline_snapshot {
 macro_rules! assert_ok {
     ($left:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!("{}", stringify!($left).red());
         $crate::assertions::make_assertion(
             "assert_ok",
@@ -521,6 +546,7 @@ macro_rules! assert_ok {
     }};
     ($left:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
@@ -547,6 +573,7 @@ macro_rules! assert_ok {
 macro_rules! assert_err {
     ($left:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!("{}", stringify!($left).red());
         $crate::assertions::make_assertion(
             "assert_err",
@@ -557,6 +584,7 @@ macro_rules! assert_err {
     }};
     ($left:expr, $description:expr) => {{
         use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}",
             stringify!($left).red(),
