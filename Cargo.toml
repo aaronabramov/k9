@@ -12,6 +12,7 @@ exclude = ["tests/**/*"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
 default = ["regex"]
+custom_comparison_formatters = []
 
 [dependencies]
 colored = "1.9"
