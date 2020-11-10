@@ -86,7 +86,6 @@ pub fn make_assertion(
     }
 }
 
-
 pub fn initialize_colors() {
     if crate::config::CONFIG.force_enable_colors {
         colored::control::set_override(true);
