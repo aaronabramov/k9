@@ -1,52 +1,46 @@
 #[cfg(feature = "custom_comparison_formatters")]
 use crate::assert_matches_inline_snapshot;
 use crate::assertion_message;
-use anyhow::Result;
 use k9::assert_equal;
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
 
 #[cfg(not(feature = "custom_comparison_formatters"))]
 #[test]
-fn test_assert_hash_sets_large_diff_without_custom_format() -> Result<()> {
+fn test_assert_hash_sets_large_diff_without_custom_format() {
     super::setup_test_env();
 
-    let s1 = HashSet::<i32>::from_iter(1..100);
-    let s2 = HashSet::<i32>::from_iter(1..101);
+    let s1 = (1..100).collect::<HashSet<i32>>();
+    let s2 = (1..101).collect::<HashSet<i32>>();
 
     let message = assertion_message(assert_equal!(s1, s2));
 
     // Since the order is randomized, we expect multiple insertions and removals
     assert!(message.matches('-').count() > 1);
     assert!(message.matches('+').count() > 1);
-
-    Ok(())
 }
 
 #[cfg(not(feature = "custom_comparison_formatters"))]
 #[test]
-fn test_assert_hash_maps_large_diff_without_custom_format() -> Result<()> {
+fn test_assert_hash_maps_large_diff_without_custom_format() {
     super::setup_test_env();
 
-    let s1 = HashMap::<i32, i32>::from_iter((1..100).zip(1..100));
-    let s2 = HashMap::<i32, i32>::from_iter((1..101).zip(1..101));
+    let s1 = (1..100).zip(1..100).collect::<HashMap<i32, i32>>();
+    let s2 = (1..101).zip(1..101).collect::<HashMap<i32, i32>>();
 
     let message = assertion_message(assert_equal!(s1, s2));
 
     // Since the order is randomized, we expect multiple insertions and removals
     assert!(message.matches('-').count() > 1);
     assert!(message.matches('+').count() > 1);
-
-    Ok(())
 }
 
 #[cfg(feature = "custom_comparison_formatters")]
 #[test]
-fn test_assert_hash_sets_small_diff_with_custom_format() -> Result<()> {
+fn test_assert_hash_sets_small_diff_with_custom_format() {
     super::setup_test_env();
 
-    let s1 = HashSet::<i32>::from_iter(1..10);
-    let s2 = HashSet::<i32>::from_iter(1..11);
+    let s1 = (1..10).collect::<HashSet<i32>>();
+    let s2 = (1..11).collect::<HashSet<i32>>();
 
     assert_matches_inline_snapshot!(
         assertion_message(assert_equal!(s1, s2)),
@@ -75,17 +69,15 @@ Expected `Left` to equal `Right`:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "##
     );
-
-    Ok(())
 }
 
 #[cfg(feature = "custom_comparison_formatters")]
 #[test]
-fn test_assert_hash_maps_small_diff_with_custom_format() -> Result<()> {
+fn test_assert_hash_maps_small_diff_with_custom_format() {
     super::setup_test_env();
 
-    let s1 = HashMap::<i32, i32>::from_iter((1..10).zip(1..10));
-    let s2 = HashMap::<i32, i32>::from_iter((1..11).zip(1..11));
+    let s1 = ((1..10).zip(1..10)).collect::<HashMap<i32, i32>>();
+    let s2 = ((1..11).zip(1..11)).collect::<HashMap<i32, i32>>();
 
     assert_matches_inline_snapshot!(
         assertion_message(assert_equal!(s1, s2)),
@@ -114,40 +106,36 @@ Expected `Left` to equal `Right`:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "##
     );
-
-    Ok(())
 }
 
 #[cfg(feature = "custom_comparison_formatters")]
 #[test]
-fn test_assert_hash_sets_large_diff_when_type_is_not_ord() -> Result<()> {
+fn test_assert_hash_sets_large_diff_when_type_is_not_ord() {
     super::setup_test_env();
 
     #[derive(PartialEq, Eq, Debug, Hash)]
     struct MyInt(i32);
 
-    let s1 = HashSet::<MyInt>::from_iter((1..100).map(MyInt));
-    let s2 = HashSet::<MyInt>::from_iter((1..101).map(MyInt));
+    let s1 = ((1..100).map(MyInt)).collect::<HashSet<MyInt>>();
+    let s2 = ((1..101).map(MyInt)).collect::<HashSet<MyInt>>();
 
     let message = assertion_message(assert_equal!(s1, s2));
 
     // Since the order is randomized, we expect multiple insertions and removals
     assert!(message.matches('-').count() > 1);
     assert!(message.matches('+').count() > 1);
-
-    Ok(())
 }
 
 #[cfg(feature = "custom_comparison_formatters")]
 #[test]
-fn test_assert_hash_maps_large_diff_when_type_is_not_ord() -> Result<()> {
+fn test_assert_hash_maps_large_diff_when_type_is_not_ord() {
     super::setup_test_env();
 
     #[derive(PartialEq, Eq, Debug, Hash)]
     struct MyInt(i32);
 
-    let s1 = HashMap::<MyInt, i32>::from_iter((1..100).map(|i| (MyInt(i), i)));
-    let s2 = HashMap::<MyInt, i32>::from_iter((1..101).map(|i| (MyInt(i), i)));
+    let s1 = ((1..100).map(|i| (MyInt(i), i))).collect::<HashMap<MyInt, i32>>();
+    let s2 = ((1..101).map(|i| (MyInt(i), i))).collect::<HashMap<MyInt, i32>>();
 
     let message = assertion_message(assert_equal!(s1, s2));
 
@@ -155,6 +143,4 @@ fn test_assert_hash_maps_large_diff_when_type_is_not_ord() -> Result<()> {
     // Since the order is randomized, we expect multiple insertions and removals
     assert!(message.matches('-').count() > 1);
     assert!(message.matches('+').count() > 1);
-
-    Ok(())
 }
