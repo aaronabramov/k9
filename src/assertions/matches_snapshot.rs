@@ -44,8 +44,10 @@ pub fn snap_internal<T: std::fmt::Display>(
     let relative_snap_path = get_test_snap_path(&snapshot_dir, &test_name)
         .display()
         .to_string();
+    let crate_root = crate::paths::find_crate_root(file).unwrap();
 
-    let absolute_snap_path = crate::paths::get_absolute_path(&relative_snap_path).unwrap();
+    let mut absolute_snap_path = crate_root;
+    absolute_snap_path.push(&relative_snap_path);
 
     let string_desc = "string".red();
     let snapshot_desc = "snapshot".green();

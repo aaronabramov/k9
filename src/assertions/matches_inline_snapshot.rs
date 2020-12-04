@@ -28,7 +28,11 @@ pub fn matches_inline_snapshot(
         (None, false) => empty_snapshot_message(),
         (_, true) => {
             let line = line as usize;
-            let this_file_path = crate::paths::get_absolute_path(file).unwrap();
+
+            let crate_root = crate::paths::find_crate_root(file).unwrap();
+
+            let mut this_file_path = crate_root;
+            this_file_path.push(file);
 
             if let Some(snapshot) = snapshot {
                 let need_updating = snapshot_matching_message(&s, snapshot).is_some();
