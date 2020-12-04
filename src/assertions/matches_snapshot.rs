@@ -1,4 +1,5 @@
 use crate::string_diff::colored_diff;
+use anyhow::{Context, Result};
 use colored::*;
 use std::path::{Path, PathBuf};
 
@@ -27,8 +28,20 @@ pub fn get_test_snap_path(snapshot_dir: &Path, test_name: &str) -> PathBuf {
     p
 }
 
-pub fn ensure_snap_dir_exists(snapshot_path: &Path) {
-    std::fs::create_dir_all(snapshot_path.parent().unwrap()).unwrap();
+pub fn ensure_snap_dir_exists(snapshot_path: &Path) -> Result<()> {
+    let snapshot_dir_path = snapshot_path.parent().with_context(|| {
+        format!(
+            "Can't determine snapshot directory. Snapshot path: `{}`",
+            snapshot_path.display()
+        )
+    })?;
+    std::fs::create_dir_all(snapshot_dir_path).with_context(|| {
+        format!(
+            "Failed to create snapshot directory: `{}`",
+            snapshot_dir_path.display()
+        )
+    })?;
+    Ok(())
 }
 
 pub fn snap_internal<T: std::fmt::Display>(
@@ -53,7 +66,7 @@ pub fn snap_internal<T: std::fmt::Display>(
     let snapshot_desc = "snapshot".green();
 
     if crate::config::CONFIG.update_mode {
-        ensure_snap_dir_exists(&absolute_snap_path);
+        ensure_snap_dir_exists(&absolute_snap_path).unwrap();
         std::fs::write(&absolute_snap_path, thing_str).unwrap();
         None
     } else if absolute_snap_path.exists() {
