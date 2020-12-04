@@ -88,7 +88,7 @@ Difference:
                 snapshot_desc = snapshot_desc,
                 file = relative_snap_path.green(),
                 diff = diff,
-                update_instructions = crate::constants::update_instructions(),
+                update_instructions = crate::config::update_instructions(),
             )
         })
     } else {
@@ -103,7 +103,7 @@ but that snapshot file does not exist.
             string_desc = string_desc,
             snapshot_desc = snapshot_desc,
             file = relative_snap_path.green(),
-            update_instructions = crate::constants::update_instructions(),
+            update_instructions = crate::config::update_instructions(),
         ))
     }
 }

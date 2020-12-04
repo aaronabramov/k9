@@ -8,7 +8,6 @@ pub mod assertions;
 pub mod config;
 pub mod string_diff;
 
-mod constants;
 mod paths;
 mod snap;
 mod types;
