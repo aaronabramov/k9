@@ -2,6 +2,8 @@ use anyhow::Result;
 
 use std::path::{Component, Path, PathBuf};
 
+// Project root is the root of the entire project. The project might contain multiple crate and it should not
+// be used together with whatever `file!()` macro will return.
 pub fn get_project_root_path() -> PathBuf {
     // If there's a buck build id we'll grab the `pwd`, because we're probably running `buck test` from the root
     if crate::config::CONFIG.built_with_buck {
@@ -19,40 +21,43 @@ buck and relies on `PWD` env variable to contain the project root, but `PWD` was
     PathBuf::from(project_root)
 }
 
-pub fn get_absolute_path(relative_file_path: &str) -> Result<PathBuf> {
+// Crate root will be the root of the project + directory of one of the worspace crates (if exists)
+// To find this we'll need to use any `file!()` macro value to test if the file exist using
+// an absolute path.
+pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
     let project_root = get_project_root_path();
 
-    let mut left = project_root.clone();
-    left.push(relative_file_path);
-    let result = left;
+    let mut without_overlap = project_root.clone();
+    without_overlap.push(result_of_file_macro);
 
-    if !result.exists() {
-        let result_with_overlap_removed =
-            join_and_remove_overlap(&project_root, relative_file_path)?;
-        dbg!(&result_with_overlap_removed);
-
-        if !result_with_overlap_removed.exists() {
-            anyhow::bail!(format!(
-                "
-                Failed to locate the path of the source file.
-                Project root was determined to be `{project_root}`
-                and the relative source file path given `{relative_file_path}
-
-                Tried paths:
-                `{result}`
-                `{result_with_overlap_removed}`
-                ",
-                project_root = project_root.display(),
-                relative_file_path = relative_file_path,
-                result = result.display(),
-                result_with_overlap_removed = result_with_overlap_removed.display(),
-            ))
-        }
-
-        return Ok(result_with_overlap_removed);
+    if without_overlap.exists() {
+        return Ok(project_root);
     }
 
-    Ok(result)
+    let root_with_overlap_removed = remove_overlap(&project_root, result_of_file_macro)?;
+
+    let mut with_overlap_removed = root_with_overlap_removed;
+    with_overlap_removed.push(result_of_file_macro);
+
+    if !with_overlap_removed.exists() {
+        anyhow::bail!(format!(
+            "
+            Failed to locate the path of the source file.
+            Project root was determined to be `{cargo_manifest_dir}`
+            and the relative source file path given `{result_of_file_macro}
+
+            Tried paths:
+            `{without_overlap}`
+            `{with_overlap_removed}`
+            ",
+            cargo_manifest_dir = project_root.display(),
+            result_of_file_macro = result_of_file_macro,
+            without_overlap = without_overlap.display(),
+            with_overlap_removed = with_overlap_removed.display(),
+        ))
+    }
+
+    Ok(with_overlap_removed)
 }
 
 // This is a hack to work around the issue with project root path resolution when
@@ -86,7 +91,7 @@ pub fn get_absolute_path(relative_file_path: &str) -> Result<PathBuf> {
 // Technically this can be a bit dangerous, since the joining part may resolve in
 // another existing file that is not the file we're looking for (esp if trying to
 // resolve some generic file names like `lib.rs`) but the risk should be fairly minimal.
-fn join_and_remove_overlap(left: &Path, right: &str) -> Result<PathBuf> {
+fn remove_overlap(left: &Path, right: &str) -> Result<PathBuf> {
     let right = PathBuf::from(right);
 
     let left_comps = left.components().collect::<Vec<_>>();
@@ -101,10 +106,9 @@ fn join_and_remove_overlap(left: &Path, right: &str) -> Result<PathBuf> {
                 let l_suffix = &left_comps[(left_comps.len() - i - 1)..];
 
                 if l_suffix == &r_prefix[..] {
-                    let mut result = left_comps[..(left_comps.len() - i - 1)]
+                    let result = left_comps[..(left_comps.len() - i - 1)]
                         .iter()
                         .collect::<PathBuf>();
-                    result.push(right);
                     return Ok(result);
                 }
             }
@@ -115,8 +119,7 @@ fn join_and_remove_overlap(left: &Path, right: &str) -> Result<PathBuf> {
         }
     }
 
-    let mut result = left.to_owned();
-    result.push(right);
+    let result = left.to_owned();
     Ok(result)
 }
 
@@ -125,31 +128,29 @@ mod tests {
     use super::super::assert_matches_inline_snapshot;
     use super::*;
 
-    fn join_overlap_helper(l: &str, r: &str) -> Result<String> {
-        Ok(join_and_remove_overlap(&PathBuf::from(l), r)?
-            .display()
-            .to_string())
+    fn remove_overlap_helper(l: &str, r: &str) -> Result<String> {
+        Ok(remove_overlap(&PathBuf::from(l), r)?.display().to_string())
     }
     #[test]
     fn remove_path_overlap_test() -> Result<()> {
         assert_matches_inline_snapshot!(
-            join_overlap_helper("hello/world", "world/hello")?,
-            "hello/world/hello"
+            remove_overlap_helper("hello/world", "world/hello")?,
+            r##"hello"##
         );
 
         assert_matches_inline_snapshot!(
-            join_overlap_helper("a/b/c/d/e/f/g", "c/d/e/f/g/h/i")?,
-            "a/b/c/d/e/f/g/h/i"
+            remove_overlap_helper("a/b/c/d/e/f/g", "c/d/e/f/g/h/i")?,
+            r##"a/b"##
         );
 
-        assert_matches_inline_snapshot!(join_overlap_helper("a/b/c", "a/b/c")?, "a/b/c");
+        assert_matches_inline_snapshot!(remove_overlap_helper("a/b/c", "a/b/c")?, r##""##);
 
         // no overlap, similar directories
-        assert_matches_inline_snapshot!(join_overlap_helper("a/b/c/d", "a/b/c")?, "a/b/c/d/a/b/c");
+        assert_matches_inline_snapshot!(remove_overlap_helper("a/b/c/d", "a/b/c")?, r##"a/b/c/d"##);
 
         assert_matches_inline_snapshot!(
-            join_overlap_helper("/home/workspace/my_crate", "my_crate/my_file")?,
-            "/home/workspace/my_crate/my_file"
+            remove_overlap_helper("/home/workspace/my_crate", "my_crate/my_file")?,
+            r##"/home/workspace"##
         );
         Ok(())
     }
