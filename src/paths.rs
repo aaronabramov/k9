@@ -36,7 +36,7 @@ pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
 
     let root_with_overlap_removed = remove_overlap(&project_root, result_of_file_macro)?;
 
-    let mut with_overlap_removed = root_with_overlap_removed;
+    let mut with_overlap_removed = root_with_overlap_removed.clone();
     with_overlap_removed.push(result_of_file_macro);
 
     if !with_overlap_removed.exists() {
@@ -57,7 +57,7 @@ pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
         ))
     }
 
-    Ok(with_overlap_removed)
+    Ok(root_with_overlap_removed)
 }
 
 // This is a hack to work around the issue with project root path resolution when
@@ -151,6 +151,11 @@ mod tests {
         assert_matches_inline_snapshot!(
             remove_overlap_helper("/home/workspace/my_crate", "my_crate/my_file")?,
             r##"/home/workspace"##
+        );
+
+        assert_matches_inline_snapshot!(
+            remove_overlap_helper("/Users/me/p/gull/gull", "gull/e2e/flow_codegen_test.rs")?,
+            r##"/Users/me/p/gull"##
         );
         Ok(())
     }
