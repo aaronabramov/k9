@@ -174,7 +174,7 @@ fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
             string_desc = "string".red(),
             snapshot_desc = "inline snapshot".green(),
             diff = diff,
-            update_instructions = crate::constants::update_instructions(),
+            update_instructions = crate::config::update_instructions(),
         )
     })
 }
@@ -189,7 +189,7 @@ but that assertion did not have any inline snapshots.
 ",
         string_desc = "string".red(),
         snapshot_desc = "inline snapshot".green(),
-        update_instructions = crate::constants::update_instructions(),
+        update_instructions = crate::config::update_instructions(),
     )
 }
 

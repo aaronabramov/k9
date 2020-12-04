@@ -1,3 +1,4 @@
+use colored::*;
 use lazy_static::lazy_static;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
@@ -70,4 +71,15 @@ fn should_force_enable_colors() -> bool {
     // output.
     // If this is not set, fall back to the usual `colored` behavior.
     is_buck_build()
+}
+
+pub fn update_instructions() -> colored::ColoredString {
+    if is_buck_build() {
+        // This only works with FB internal infra + buck, but i don't think anyone in the real world
+        // would use buck to build anything so it's probably fine to hardcode it here. ¯\_(ツ)_/¯
+        "K9_UPDATE_SNAPSHOTS=1 buck test //path/to/your/buck/target/... -- --fallback-classic"
+            .yellow()
+    } else {
+        "run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots".yellow()
+    }
 }
