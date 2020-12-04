@@ -1,7 +1,10 @@
+mod inline_snap_test;
+mod test_utils;
+
+use k9_released::*;
+
 #[test]
 fn smoke_test() {
-    use k9_published::*;
-
     assert_equal!(1, 1);
 
     assert_err!(Err("Error!"));

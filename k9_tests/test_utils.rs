@@ -12,6 +12,8 @@ const E2E_TEMP_DIR: &str = "e2e_tmp_dir";
 const CAPTURE_TEST_RESULT_RE: &str = "^test (?P<test>[:_\\w]+) \\.{3} (?P<result>FAILED|ok)$";
 
 pub const TEST_CARGO_TOML: &str = r#"
+[workspace]
+
 [package]
 name = "k9_e2e_test_project"
 version = "0.1.0"
@@ -19,7 +21,7 @@ authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
 
 [dependencies]
-k9 = { path = "../../" }
+k9 = { path = "../../../k9" }
 
 [lib]
 name = "test"
@@ -78,6 +80,7 @@ impl TestRun {
     }
 }
 
+#[derive(Debug)]
 pub struct TestRunResult {
     pub exit_code: Option<i32>,
     pub stderr: String,

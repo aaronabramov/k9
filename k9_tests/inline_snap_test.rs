@@ -1,14 +1,12 @@
-mod test_utils;
-
+use crate::test_utils::TestProject;
 use anyhow::Result;
-use k9::*;
-use test_utils::TestProject;
+use k9_released::*;
 
 #[test]
 fn inline_snapshots() -> Result<()> {
     let p = TestProject::new();
 
-    p.write_file("Cargo.toml", test_utils::TEST_CARGO_TOML)?;
+    p.write_file("Cargo.toml", crate::test_utils::TEST_CARGO_TOML)?;
 
     p.write_file(
         "lib.rs",
@@ -38,6 +36,7 @@ fn passing() {}
 
     assert!(!test_run.success);
 
+    dbg!(&test_run);
     assert_matches_inline_snapshot!(
         format!("{:?}", test_run.test_cases),
         "{\"basic_tests::inline_snapshot\": TestCaseResult { status: Fail }, \"basic_tests::passing\": TestCaseResult { status: Pass }}"
