@@ -19,4 +19,5 @@ Cargo.lock
 /target
 #Cargo.lock
 
-/e2e_tmp_dir/
+**/e2e_tmp_dir/
+.DS_Store

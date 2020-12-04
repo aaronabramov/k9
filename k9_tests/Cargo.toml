@@ -1,13 +1,17 @@
 [package]
-name = "smoke_test"
+name = "k9_tests"
 version = "0.1.0"
 authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
 
 # More information on Caret requirements: https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html#caret-requirements
 [dependencies]
-k9_published = { package = "k9", version = "*" } # latest
+anyhow = "1.0.34"
+derive_builder = "0.9.0"
+k9_released = { version = "*", package = "k9" }
+rand = "0.7.3"
+regex = "1.4.2"
 
-[lib]
-name = "smoke_test"
-path = "lib.rs"
+[[test]]
+name = "k9_tests"
+path = "mod.rs"
