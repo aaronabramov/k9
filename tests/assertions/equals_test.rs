@@ -1,10 +1,9 @@
 use crate::assert_matches_inline_snapshot;
 use crate::assertion_message;
-use anyhow::Result;
 use k9::assert_equal;
 
 #[test]
-fn test_assert_equal() -> Result<()> {
+fn test_assert_equal() {
     super::setup_test_env();
 
     assert!(assert_equal!(1, 1).is_none());
@@ -32,11 +31,10 @@ Expected `Left` to equal `Right`:
     );
     assert_matches_inline_snapshot!("hello", "hello");
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
-    Ok(())
 }
 
 #[test]
-fn multiline_struct_equality_test() -> Result<()> {
+fn multiline_struct_equality_test() {
     super::setup_test_env();
     #[derive(PartialEq, Debug)]
     struct X {
@@ -119,7 +117,6 @@ Expected `[31mLeft[0m` to equal `[32mRight[0m`:
 
 [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 ");
-    Ok(())
 }
 
 #[test]

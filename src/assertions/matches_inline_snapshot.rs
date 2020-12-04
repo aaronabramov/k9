@@ -25,7 +25,7 @@ pub fn matches_inline_snapshot(
 ) -> Option<String> {
     match (snapshot, crate::config::CONFIG.update_mode) {
         (Some(snapshot), false) => snapshot_matching_message(&s, snapshot),
-        (None, false) => empty_snapshot_message(),
+        (None, false) => Some(empty_snapshot_message()),
         (_, true) => {
             let line = line as usize;
 
@@ -179,8 +179,8 @@ fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
     })
 }
 
-fn empty_snapshot_message() -> Option<String> {
-    Some(format!(
+fn empty_snapshot_message() -> String {
+    format!(
         "Expected {string_desc} to match {snapshot_desc}
 
 but that assertion did not have any inline snapshots.
@@ -190,7 +190,7 @@ but that assertion did not have any inline snapshots.
         string_desc = "string".red(),
         snapshot_desc = "inline snapshot".green(),
         update_instructions = crate::constants::update_instructions(),
-    ))
+    )
 }
 
 extern "C" fn libc_atexit_hook() {
@@ -238,7 +238,7 @@ fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
     let mut updates = file.updates.iter().collect::<Vec<_>>();
     updates.sort_by(|a, b| a.range.start.line.cmp(&b.range.start.line));
 
-    let parts = split_by_ranges(content, updates.iter().map(|u| &u.range).collect()).unwrap();
+    let parts = split_by_ranges(content, updates.iter().map(|u| &u.range).collect());
 
     assert_eq!(parts.len(), updates.len() + 1);
 
@@ -335,7 +335,7 @@ fn find_inline_snapshot_range(
     }
 }
 
-fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, String> {
+fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Vec<String> {
     let mut iter = ranges.iter().peekable();
 
     // ranges must be pre-sorted
@@ -405,5 +405,5 @@ fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Result<Vec<String>, 
         }
     }
     chunks.push(next_chunk);
-    Ok(chunks)
+    chunks
 }

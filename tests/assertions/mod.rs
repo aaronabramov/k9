@@ -1,3 +1,5 @@
+#![allow(clippy::complexity)]
+
 mod custom_comparison_formatters_test;
 mod equals_test;
 
