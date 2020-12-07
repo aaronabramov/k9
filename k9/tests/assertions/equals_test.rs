@@ -35,6 +35,13 @@ Expected `Left` to equal `Right`:
 }
 
 #[test]
+fn type_inference() {
+    assert_eq!(1, "1".parse().unwrap());
+    // Must infer the type for `parse` without asking to specify it
+    assert!(assert_equal!(1, "1".parse().unwrap()).is_none());
+}
+
+#[test]
 fn multiline_struct_equality_test() {
     super::setup_test_env();
     #[derive(PartialEq, Debug)]
