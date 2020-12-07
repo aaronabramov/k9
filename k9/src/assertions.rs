@@ -115,6 +115,8 @@ pub fn initialize_colors() {
 #[macro_export]
 macro_rules! assert_equal {
     ($left:expr, $right:expr) => {{
+        let left = $left;
+        let right = $right;
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!(
@@ -122,11 +124,11 @@ macro_rules! assert_equal {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        let fail = &$left != &$right;
+        let fail = &left != &right;
         $crate::assertions::make_assertion(
             "assert_equal",
             args_str,
-            $crate::assertions::equal::assert_equal($left, $right, fail),
+            $crate::assertions::equal::assert_equal(left, right, fail),
             None,
         )
     }};
@@ -144,7 +146,7 @@ macro_rules! assert_equal {
         $crate::assertions::make_assertion(
             "assert_equal",
             args_str,
-            $crate::assertions::equal::assert_equal($left, $right, fail),
+            $crate::assertions::equal::assert_equal(&$left, &$right, fail),
             Some(&description),
         )
     }};

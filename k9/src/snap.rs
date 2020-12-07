@@ -4,6 +4,8 @@ use std::sync::{Arc, Mutex};
 
 /// String with concurrent access. Allows mutation without &mut reference to itself.
 /// It makes passing it to different parts of tests easier when performance is not important.
+/// Useful for accumulating output from a system under test and later using it with
+/// [assert_matches_inline_snapshot](crate::assert_matches_inline_snapshot).
 ///
 /// ```rust
 /// let snap = k9::Snap::new();
@@ -15,7 +17,7 @@ use std::sync::{Arc, Mutex};
 /// closure_captured_snap_by_ref();
 /// closure_captured_snap_by_ref();
 //
-/// k9::assert_equal!(snap.to_string(), "aaa".to_string());
+/// k9::assert_matches_inline_snapshot!(snap.to_string(), "aaa");
 /// ```
 #[derive(Clone)]
 pub struct Snap(Arc<Mutex<String>>);
