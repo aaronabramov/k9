@@ -77,8 +77,7 @@ pub fn update_instructions() -> colored::ColoredString {
     if is_buck_build() {
         // This only works with FB internal infra + buck, but i don't think anyone in the real world
         // would use buck to build anything so it's probably fine to hardcode it here. ¯\_(ツ)_/¯
-        "K9_UPDATE_SNAPSHOTS=1 buck test //path/to/your/buck/target/... -- --fallback-classic"
-            .yellow()
+        "buck test //path/to/your/buck/target/... -- --env K9_UPDATE_SNAPSHOTS=1".yellow()
     } else {
         "run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots".yellow()
     }
