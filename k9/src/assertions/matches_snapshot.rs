@@ -62,7 +62,7 @@ pub fn snap_internal<T: std::fmt::Display>(
     let mut absolute_snap_path = crate_root;
     absolute_snap_path.push(&relative_snap_path);
 
-    let string_desc = "string".red();
+    let string_desc = &thing_str;
     let snapshot_desc = "snapshot".green();
 
     if crate::config::CONFIG.update_mode {
@@ -93,9 +93,12 @@ Difference:
         })
     } else {
         Some(format!(
-            "Expected {string_desc} to match {snapshot_desc} stored in
-{file}
+            "Expected
 
+{string_desc}
+
+to match {snapshot_desc} stored in
+{file}
 but that snapshot file does not exist.
 
 {update_instructions}
