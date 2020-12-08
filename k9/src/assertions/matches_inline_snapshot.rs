@@ -189,7 +189,7 @@ to match {snapshot_desc} but that assertion did not have any inline snapshots.
 
 {update_instructions}
 ",
-        string_desc = s.to_string(),
+        string_desc = s,
         snapshot_desc = "inline snapshot".green(),
         update_instructions = crate::config::update_instructions(),
     )
