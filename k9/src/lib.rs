@@ -6,6 +6,7 @@ see <https://github.com/aaronabramov/k9> for high level description of the libra
 
 pub mod assertions;
 pub mod config;
+pub mod snapshot;
 pub mod string_diff;
 
 mod multiline_string;

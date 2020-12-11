@@ -8,6 +8,7 @@ pub mod matches_regex;
 
 pub mod equal;
 pub mod err;
+pub mod experimental_snapshot;
 pub mod greater_than;
 pub mod greater_than_or_equal;
 pub mod lesser_than;
@@ -597,6 +598,52 @@ macro_rules! assert_err {
             args_str,
             $crate::assertions::err::assert_err($left),
             Some(&$description),
+        )
+    }};
+}
+
+#[macro_export]
+macro_rules! experimental_snapshot {
+    ($to_snap:expr) => {{
+        use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
+        let line = line!();
+        let column = column!();
+        let file = file!();
+        let args_str = format!("{}", stringify!($to_snap).red(),);
+        let s: String = $to_snap.into();
+        $crate::assertions::make_assertion(
+            "experimental_snapshot",
+            args_str,
+            $crate::assertions::experimental_snapshot::experimental_snapshot(
+                s, None, line, column, file,
+            ),
+            None,
+        )
+    }};
+    ($to_snap:expr, $inline_snap:literal) => {{
+        use $crate::__macros__::colored::*;
+        $crate::assertions::initialize_colors();
+        let line = line!();
+        let column = column!();
+        let file = file!();
+        let args_str = format!(
+            "{}, {}",
+            stringify!($to_snap).red(),
+            stringify!($inline_snap).green(),
+        );
+        let s: String = $to_snap.into();
+        $crate::assertions::make_assertion(
+            "experimental_snapshot",
+            args_str,
+            $crate::assertions::experimental_snapshot::experimental_snapshot(
+                s,
+                Some($inline_snap),
+                line,
+                column,
+                file,
+            ),
+            None,
         )
     }};
 }
