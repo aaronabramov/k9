@@ -1,4 +1,4 @@
-use super::TestRunBuilder;
+use super::{TestRunBuilder, TestRunResult};
 use anyhow::{Context, Result};
 use rand::prelude::*;
 use std::fs;
@@ -11,16 +11,34 @@ pub struct TestProject {
 }
 
 impl TestProject {
-    pub fn new() -> Self {
-        let mut root_dir = PathBuf::from(
-            std::env::var("CARGO_MANIFEST_DIR").expect("Can't get project root directory"),
-        );
-        let mut rng = rand::thread_rng();
+    pub fn new<S: Into<String>>(name: S) -> Self {
+        let root_dir = temp_dir(name);
+        Self { root_dir }
+    }
 
-        let r: u64 = rng.gen();
+    pub fn fixture<S: Into<String>>(name: S, fixture_path: S) -> Self {
+        let mut fixture_root = cargo_root();
+        fixture_root.push(fixture_path.into());
+        let fixture_root = fixture_root.canonicalize().unwrap_or_else(|e| {
+            panic!(
+                "failed to resolve fixture_path; `{}`. \n{:?}\n",
+                &fixture_root.display().to_string(),
+                e
+            )
+        });
 
-        root_dir.push(E2E_TEMP_DIR);
-        root_dir.push(format!("{}", r));
+        let root_dir = temp_dir(name);
+
+        let mut options = fs_extra::dir::CopyOptions::new();
+        options.copy_inside = true;
+
+        fs_extra::dir::copy(fixture_root, &root_dir, &options)
+            .expect("failed to copy fixture project to a temp dir");
+
+        let mut target_dir = root_dir.clone();
+        target_dir.push("target");
+        // Copying target messes up permissions and `cargo` blows up
+        std::fs::remove_dir_all(target_dir).ok();
 
         Self { root_dir }
     }
@@ -45,6 +63,14 @@ impl TestProject {
         builder.root_dir(self.root_dir.clone());
         builder
     }
+
+    pub fn run_matching_tests<S: Into<String>>(&self, pattern: S) -> Result<TestRunResult> {
+        self.run_tests()
+            .match_tests(pattern.into())
+            .build()
+            .unwrap()
+            .run()
+    }
 }
 
 impl Drop for TestProject {
@@ -52,4 +78,19 @@ impl Drop for TestProject {
         // could have been never cerated. don't care about result
         // let _result = fs::remove_dir_all(&self.root_dir);
     }
+}
+
+fn temp_dir<S: Into<String>>(name: S) -> PathBuf {
+    let mut root_dir = cargo_root();
+    let mut rng = rand::thread_rng();
+
+    let r: u64 = rng.gen();
+
+    root_dir.push(E2E_TEMP_DIR);
+    root_dir.push(format!("{}-{}", name.into(), r));
+    root_dir
+}
+
+fn cargo_root() -> PathBuf {
+    PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("Can't get project root directory"))
 }

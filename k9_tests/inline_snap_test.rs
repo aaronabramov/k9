@@ -3,7 +3,7 @@ use anyhow::Result;
 
 #[test]
 fn inline_snapshots() -> Result<()> {
-    let p = TestProject::new();
+    let p = TestProject::new("inline_snapshots");
 
     p.write_file("Cargo.toml", crate::support::TEST_CARGO_TOML)?;
 

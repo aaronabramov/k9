@@ -1,3 +1,4 @@
+mod basic_fixture;
 mod inline_snap_test;
 mod support;
 

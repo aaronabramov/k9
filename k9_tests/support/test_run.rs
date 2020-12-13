@@ -13,6 +13,8 @@ const CAPTURE_TEST_RESULT_RE: &str = "^test (?P<test>[:_\\w]+) \\.{3} (?P<result
 pub struct TestRun {
     update_snapshots: bool,
     root_dir: PathBuf,
+    #[builder(setter(into, strip_option))]
+    match_tests: Option<String>,
 }
 
 pub type _TestRunBuilder = TestRunBuilder;
@@ -21,6 +23,10 @@ impl TestRun {
     pub fn run(&self) -> Result<TestRunResult> {
         let mut cmd = Command::new("cargo");
         cmd.current_dir(&self.root_dir).arg("test");
+
+        if let Some(match_tests) = &self.match_tests {
+            cmd.arg(match_tests);
+        }
 
         if self.update_snapshots {
             cmd.env("K9_UPDATE_SNAPSHOTS", "1");
@@ -52,13 +58,32 @@ impl TestRun {
             );
         }
 
+        let stdout_sanitized = self.sanitize_output(&stdout)?;
+
         Ok(TestRunResult {
             exit_code,
             stderr,
             stdout,
+            stdout_sanitized,
             success,
             test_cases,
         })
+    }
+
+    fn sanitize_output(&self, output: &str) -> Result<String> {
+        let path_regex = regex::RegexBuilder::new(r#"(/\S+/k9/)(?P<d>\S+\.rs)"#)
+            .multi_line(true)
+            .build()?;
+
+        let replaced = path_regex.replace_all(output, "<REPLACED>/$d");
+
+        let finished_regex = regex::RegexBuilder::new(r#"; finished in \d+\.\d+s"#)
+            .multi_line(true)
+            .build()?;
+
+        let replaced = finished_regex.replace_all(&replaced, "");
+
+        Ok(replaced.into())
     }
 }
 
@@ -67,8 +92,20 @@ pub struct TestRunResult {
     pub exit_code: Option<i32>,
     pub stderr: String,
     pub stdout: String,
+    pub stdout_sanitized: String,
     pub success: bool,
     pub test_cases: BTreeMap<String, TestCaseResult>,
+}
+
+impl TestRunResult {
+    pub fn assert_success(&self) -> Result<()> {
+        anyhow::ensure!(
+            self.success,
+            "Test run failed: stderr:\n--------------------------\n{}\n------------------------\n",
+            self.stderr
+        );
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]
