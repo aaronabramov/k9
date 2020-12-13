@@ -1,44 +1,32 @@
 use anyhow::{Context, Result};
 use derive_builder::Builder;
-use rand::prelude::*;
 use regex::RegexBuilder;
 use std::collections::BTreeMap;
-use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 
-const E2E_TEMP_DIR: &str = "e2e_tmp_dir";
 const CAPTURE_TEST_RESULT_RE: &str = "^test (?P<test>[:_\\w]+) \\.{3} (?P<result>FAILED|ok)$";
-
-pub const TEST_CARGO_TOML: &str = r#"
-[workspace]
-
-[package]
-name = "k9_e2e_test_project"
-version = "0.1.0"
-authors = ["Aaron Abramov <aaron@abramov.io>"]
-edition = "2018"
-
-[dependencies]
-k9 = { path = "../../../k9" }
-
-[lib]
-name = "test"
-path = "lib.rs"
-"#;
 
 #[derive(Builder, Default, Debug)]
 #[builder(default, setter(into))]
 pub struct TestRun {
     update_snapshots: bool,
     root_dir: PathBuf,
+    #[builder(setter(into, strip_option))]
+    match_tests: Option<String>,
 }
+
+pub type _TestRunBuilder = TestRunBuilder;
 
 impl TestRun {
     pub fn run(&self) -> Result<TestRunResult> {
         let mut cmd = Command::new("cargo");
         cmd.current_dir(&self.root_dir).arg("test");
+
+        if let Some(match_tests) = &self.match_tests {
+            cmd.arg(match_tests);
+        }
 
         if self.update_snapshots {
             cmd.env("K9_UPDATE_SNAPSHOTS", "1");
@@ -70,13 +58,32 @@ impl TestRun {
             );
         }
 
+        let stdout_sanitized = self.sanitize_output(&stdout)?;
+
         Ok(TestRunResult {
             exit_code,
             stderr,
             stdout,
+            stdout_sanitized,
             success,
             test_cases,
         })
+    }
+
+    fn sanitize_output(&self, output: &str) -> Result<String> {
+        let path_regex = regex::RegexBuilder::new(r#"(/\S+/k9/)(?P<d>\S+\.rs)"#)
+            .multi_line(true)
+            .build()?;
+
+        let replaced = path_regex.replace_all(output, "<REPLACED>/$d");
+
+        let finished_regex = regex::RegexBuilder::new(r#"; finished in \d+\.\d+s"#)
+            .multi_line(true)
+            .build()?;
+
+        let replaced = finished_regex.replace_all(&replaced, "");
+
+        Ok(replaced.into())
     }
 }
 
@@ -85,8 +92,20 @@ pub struct TestRunResult {
     pub exit_code: Option<i32>,
     pub stderr: String,
     pub stdout: String,
+    pub stdout_sanitized: String,
     pub success: bool,
     pub test_cases: BTreeMap<String, TestCaseResult>,
+}
+
+impl TestRunResult {
+    pub fn assert_success(&self) -> Result<()> {
+        anyhow::ensure!(
+            self.success,
+            "Test run failed: stderr:\n--------------------------\n{}\n------------------------\n",
+            self.stderr
+        );
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -110,53 +129,5 @@ impl FromStr for TestCaseStatus {
             "FAILED" => Ok(TestCaseStatus::Fail),
             _ => Err(anyhow::anyhow!("Unknown test status: `{}`", input)),
         }
-    }
-}
-
-pub struct TestProject {
-    pub root_dir: PathBuf,
-}
-
-impl TestProject {
-    pub fn new() -> Self {
-        let mut root_dir = PathBuf::from(
-            std::env::var("CARGO_MANIFEST_DIR").expect("Can't get project root directory"),
-        );
-        let mut rng = rand::thread_rng();
-
-        let r: u64 = rng.gen();
-
-        root_dir.push(E2E_TEMP_DIR);
-        root_dir.push(format!("{}", r));
-
-        Self { root_dir }
-    }
-
-    pub fn write_file(&self, path: &str, content: &str) -> Result<()> {
-        let mut absolute_path = self.root_dir.clone();
-        absolute_path.push(path);
-        let dir = absolute_path.parent().unwrap();
-        fs::create_dir_all(dir)?;
-        fs::write(absolute_path, content)?;
-        Ok(())
-    }
-
-    pub fn read_file(&self, path: &str) -> Result<String> {
-        let mut absolute_path = self.root_dir.clone();
-        absolute_path.push(path);
-        fs::read_to_string(&absolute_path).context("can't read file")
-    }
-
-    pub fn run_tests(&self) -> TestRunBuilder {
-        let mut builder = TestRunBuilder::default();
-        builder.root_dir(self.root_dir.clone());
-        builder
-    }
-}
-
-impl Drop for TestProject {
-    fn drop(&mut self) {
-        // could have been never cerated. don't care about result
-        // let _result = fs::remove_dir_all(&self.root_dir);
     }
 }

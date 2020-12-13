@@ -8,6 +8,7 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.34"
 derive_builder = "0.9.0"
+fs_extra = "1.2.0"
 k9_released = { version = "*", package = "k9" }
 rand = "0.7.3"
 regex = "1.4.2"
