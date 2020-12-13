@@ -1,11 +1,11 @@
-use crate::test_utils::TestProject;
+use crate::support::TestProject;
 use anyhow::Result;
 
 #[test]
 fn inline_snapshots() -> Result<()> {
     let p = TestProject::new();
 
-    p.write_file("Cargo.toml", crate::test_utils::TEST_CARGO_TOML)?;
+    p.write_file("Cargo.toml", crate::support::TEST_CARGO_TOML)?;
 
     p.write_file(
         "lib.rs",

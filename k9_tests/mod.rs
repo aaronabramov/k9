@@ -1,5 +1,5 @@
 mod inline_snap_test;
-mod test_utils;
+mod support;
 
 use k9_released::*;
 
