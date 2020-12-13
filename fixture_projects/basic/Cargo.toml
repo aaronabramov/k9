@@ -10,3 +10,7 @@ edition = "2018"
 
 [dependencies]
 k9 = { path = "../../k9" }
+
+[[test]]
+name = "tests"
+path = "tests/mod.rs"
