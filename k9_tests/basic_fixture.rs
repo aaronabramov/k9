@@ -40,7 +40,7 @@ failures:
 ---- snapshots_experimental::experimental_snapshot stdout ----
 thread 'snapshots_experimental::experimental_snapshot' panicked at '
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-assert_matches_inline_snapshot!("Hello");
+snapshot!("Hello\nWorld");
 
 Assertion Failure!
 
@@ -89,7 +89,11 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
 #[test]
 fn experimental_snapshot() {
-    assert_matches_inline_snapshot!("Hello", r~~"Hello"~~);
+    _snapshot!(
+        "Hello\nWorld",
+        r~~"Hello
+World"~~
+    );
 }
 "##
     );

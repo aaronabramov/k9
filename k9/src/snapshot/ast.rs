@@ -1,5 +1,5 @@
 use super::source_code::{extract_range, LineColumn, Range};
-use anyhow::Result;
+use anyhow::{Context, Result};
 use proc_macro2::{Span, TokenStream, TokenTree};
 use syn::spanned::Spanned;
 use syn::visit::Visit;
@@ -48,18 +48,22 @@ pub fn find_snapshot_literal_range<S: Into<String>>(
     literal_exists: bool,
 ) -> Result<Range> {
     let syntax = syn::parse_file(file_content).expect("Unable to parse file");
+    let macro_name = macro_name.into();
 
     let mut macro_visitor = MacroVisitor {
         found: None,
         line: line_num,
-        macro_name: macro_name.into(),
+        macro_name: macro_name.clone(),
     };
 
     macro_visitor.visit_file(&syntax);
 
-    let (tt, macro_node) = macro_visitor
-        .found
-        .expect("didnt find macro literal in ast");
+    let (tt, macro_node) = macro_visitor.found.with_context(|| {
+        format!(
+            "Failed to find a macro call AST node with macro name `{}!()`.\nThis macro was called on line `{}`\n\n",
+            &macro_name, line_num
+        )
+    })?;
 
     if literal_exists {
         let literal = tt.into_iter().last();
