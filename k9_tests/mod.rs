@@ -1,4 +1,5 @@
 mod basic_fixture;
+mod failure_messages;
 mod inline_snap_test;
 mod support;
 
