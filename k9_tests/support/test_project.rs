@@ -1,10 +1,9 @@
 use super::{TestRunBuilder, TestRunResult};
 use anyhow::{Context, Result};
-use rand::prelude::*;
 use std::fs;
 use std::path::PathBuf;
 
-const E2E_TEMP_DIR: &str = "e2e_tmp_dir";
+const E2E_TEMP_DIR: &str = "__E2E_TEMP_DIR__";
 
 pub struct TestProject {
     pub root_dir: PathBuf,
@@ -12,7 +11,7 @@ pub struct TestProject {
 
 impl TestProject {
     pub fn new<S: Into<String>>(name: S) -> Self {
-        let root_dir = temp_dir(name);
+        let root_dir = prepare_temp_dir(name);
         Self { root_dir }
     }
 
@@ -27,7 +26,7 @@ impl TestProject {
             )
         });
 
-        let root_dir = temp_dir(name);
+        let root_dir = prepare_temp_dir(name);
 
         let mut options = fs_extra::dir::CopyOptions::new();
         options.copy_inside = true;
@@ -80,14 +79,12 @@ impl Drop for TestProject {
     }
 }
 
-fn temp_dir<S: Into<String>>(name: S) -> PathBuf {
+fn prepare_temp_dir<S: Into<String>>(name: S) -> PathBuf {
     let mut root_dir = cargo_root();
-    let mut rng = rand::thread_rng();
-
-    let r: u64 = rng.gen();
-
     root_dir.push(E2E_TEMP_DIR);
-    root_dir.push(format!("{}-{}", name.into(), r));
+    root_dir.push(name.into());
+    // Remove anything from previous test run
+    fs::remove_dir_all(&root_dir).ok();
     root_dir
 }
 

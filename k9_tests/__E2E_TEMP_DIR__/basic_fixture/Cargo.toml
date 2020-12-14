@@ -1,0 +1,16 @@
+[workspace]
+
+[package]
+name = "basic"
+version = "0.1.0"
+authors = ["Aaron Abramov <dabramov@fb.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+k9 = { path = "../../../k9" }
+
+[[test]]
+name = "tests"
+path = "_tests/mod.rs"
