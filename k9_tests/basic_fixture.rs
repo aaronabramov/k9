@@ -40,7 +40,7 @@ failures:
 ---- snapshots_experimental::experimental_snapshot stdout ----
 thread 'snapshots_experimental::experimental_snapshot' panicked at '
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-snapshot!("Hello\nWorld");
+snapshot!(map);
 
 Assertion Failure!
 
@@ -84,17 +84,49 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
     k9_released::assert_matches_inline_snapshot!(
         project
             .read_file("_tests/snapshots_experimental.rs")?
-            .replace("##", "~~"),
+            .replace("#", "~"),
         r##"use k9::*;
+use std::collections::BTreeSet;
 
-#[test]
+~[test]
 fn experimental_snapshot() {
     _snapshot!(
         "Hello\nWorld",
-        r~~"
-"Hello
-World"
-"~~
+        "
+Hello
+World
+"
+    );
+
+    let map: BTreeSet<u8> = vec![1, 2, 3, 0, 5, 8].into_iter().collect();
+
+    _snapshot!(
+        map,
+        "
+{
+    0,
+    1,
+    2,
+    3,
+    5,
+    8,
+}
+"
+    );
+
+    _snapshot!(
+        "uses single quotes for literal",
+        "uses single quotes for literal"
+    );
+
+    _snapshot!(
+        r~"should"not"use"quotes"in"literal"~,
+        r~"should\"not\"use\"quotes\"in\"literal"~
+    );
+
+    _snapshot!(
+        r~~~~"should use more than two "~~ for escaping"~~~~,
+        r~~~"should use more than two \"~~ for escaping"~~~
     );
 }
 "##

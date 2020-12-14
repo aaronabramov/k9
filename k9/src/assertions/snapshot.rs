@@ -242,10 +242,12 @@ fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
                     UpdateInlineSnapshotMode::Replace => "",
                 };
 
+                let literal = make_literal(&update.new_value)?;
+
                 let update_string = format!(
-                    "{comma_separator}r##\"{to_add}\"##",
+                    "{comma_separator}{to_add}",
                     comma_separator = comma_separator,
-                    to_add = &update.new_value,
+                    to_add = literal
                 );
 
                 result.push_str(&update_string);
@@ -278,6 +280,16 @@ fn value_to_string<V: Debug>(value: V) -> String {
     // snapshots. This will replace them back to be displayed as newlines
     s = s.replace("\\n", "\n");
 
+    let mut chars = s.chars();
+
+    // `Debug` of a string also wraps the printed value in leading and trailing "
+    // We'll trim these quotes in this case. This is a bit risky, since
+    // not only `String` dbg can produce leading and trailing ". But currently
+    // there's no other easy way to apply certain formatting to `String`s only
+    if let (Some('"'), Some('"')) = (chars.next(), chars.next_back()) {
+        s = chars.collect();
+    }
+
     if s.contains('\n') {
         // If it's a multiline string, we always add a leading and trailing `\n`
         // to avoid awkward macros like
@@ -286,4 +298,25 @@ fn value_to_string<V: Debug>(value: V) -> String {
         s = format!("\n{}\n", s);
     }
     s
+}
+
+fn make_literal(s: &str) -> Result<String> {
+    // If snasphot doesn't contain any " characters
+    // wrap the string in "" and use it as a literal
+    if !s.contains('"') {
+        return Ok(format!(r#""{}""#, s));
+    }
+
+    // Otherwise try incrementing the number of # and see if
+    // that results in a properly escaped string.
+    for i in 0..5 {
+        let esc = "#".repeat(i);
+        let end = format!("\"{}", &esc);
+
+        if !s.contains(&end) {
+            return Ok(format!(r#"r{}"{}"{}"#, esc, s, esc));
+        }
+    }
+
+    anyhow::bail!("Failed to create snapshot string literal")
 }
