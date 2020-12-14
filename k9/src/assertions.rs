@@ -116,8 +116,6 @@ pub fn initialize_colors() {
 #[macro_export]
 macro_rules! assert_equal {
     ($left:expr, $right:expr) => {{
-        let left = $left;
-        let right = $right;
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!(
@@ -125,13 +123,18 @@ macro_rules! assert_equal {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        let fail = &left != &right;
-        $crate::assertions::make_assertion(
-            "assert_equal",
-            args_str,
-            $crate::assertions::equal::assert_equal(left, right, fail),
-            None,
-        )
+
+        match  (&$left, &$right) {
+            (left, right) => {
+                let fail = *left != *right;
+                $crate::assertions::make_assertion(
+                    "assert_equal",
+                    args_str,
+                    $crate::assertions::equal::assert_equal(left, right, fail),
+                    None,
+                )
+            }
+        }
     }};
     ($left:expr, $right:expr, $($description:expr),*) => {{
         use $crate::__macros__::colored::*;
@@ -143,13 +146,17 @@ macro_rules! assert_equal {
             stringify!($right).green(),
             stringify!($( $description ),* ).dimmed(),
         );
-        let fail = &$left != &$right;
-        $crate::assertions::make_assertion(
-            "assert_equal",
-            args_str,
-            $crate::assertions::equal::assert_equal(&$left, &$right, fail),
-            Some(&description),
-        )
+        match  (&$left, &$right) {
+            (left, right) => {
+                let fail = *left != *right;
+                $crate::assertions::make_assertion(
+                    "assert_equal",
+                    args_str,
+                    $crate::assertions::equal::assert_equal(left, right, fail),
+                    Some(&description),
+                )
+            }
+        }
     }};
 }
 
