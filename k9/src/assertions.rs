@@ -611,11 +611,10 @@ macro_rules! _snapshot {
         let column = column!();
         let file = file!();
         let args_str = format!("{}", stringify!($to_snap).red(),);
-        let s: String = $to_snap.into();
         $crate::assertions::make_assertion(
             "snapshot",
             args_str,
-            $crate::assertions::snapshot::snapshot(s, None, line, column, file),
+            $crate::assertions::snapshot::snapshot($to_snap, None, line, column, file),
             None,
         )
     }};
@@ -630,11 +629,16 @@ macro_rules! _snapshot {
             stringify!($to_snap).red(),
             stringify!($inline_snap).green(),
         );
-        let s: String = $to_snap.into();
         $crate::assertions::make_assertion(
             "snapshot",
             args_str,
-            $crate::assertions::snapshot::snapshot(s, Some($inline_snap), line, column, file),
+            $crate::assertions::snapshot::snapshot(
+                $to_snap,
+                Some($inline_snap),
+                line,
+                column,
+                file,
+            ),
             None,
         )
     }};
