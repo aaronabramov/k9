@@ -91,8 +91,10 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 fn experimental_snapshot() {
     _snapshot!(
         "Hello\nWorld",
-        r~~"Hello
-World"~~
+        r~~"
+"Hello
+World"
+"~~
     );
 }
 "##

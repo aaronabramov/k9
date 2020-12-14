@@ -6,6 +6,7 @@ use anyhow::{Context, Result};
 use colored::*;
 use lazy_static::lazy_static;
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
@@ -32,45 +33,47 @@ fn maybe_register_atexit_hook() {
     }
 }
 
-pub fn snapshot(
-    s: String,
+pub fn snapshot<V: Debug>(
+    value: V,
     snapshot: Option<&str>,
     line: u32,
     _column: u32,
     file: &str,
 ) -> Option<String> {
-    snapshot_internal(s, snapshot, line, file)
+    snapshot_internal(value, snapshot, line, file)
         .context("snapshot!() macro failed")
         .unwrap()
 }
 
-pub fn snapshot_internal(
-    s: String,
+pub fn snapshot_internal<V: Debug>(
+    value: V,
     snapshot: Option<&str>,
     line: u32,
     file: &str,
 ) -> Result<Option<String>> {
+    let value_str = value_to_string(value);
     match (snapshot, crate::config::CONFIG.update_mode) {
-        (Some(snapshot), false) => Ok(snapshot_matching_message(&s, snapshot)),
+        (Some(snapshot), false) => Ok(snapshot_matching_message(&value_str, snapshot)),
         (None, false) => Ok(Some(empty_snapshot_message())),
         (_, true) => {
             let line = line as usize;
 
-            let crate_root = crate::paths::find_crate_root(file).unwrap();
+            let crate_root =
+                crate::paths::find_crate_root(file).context("Failed to find crate root")?;
 
             let mut this_file_path = crate_root;
             this_file_path.push(file);
 
             if let Some(snapshot) = snapshot {
-                let need_updating = snapshot_matching_message(&s, snapshot).is_some();
+                let need_updating = snapshot_matching_message(&value_str, snapshot).is_some();
 
                 if need_updating {
                     let mode = UpdateInlineSnapshotMode::Replace;
-                    schedule_snapshot_update(this_file_path, line, &s, mode).unwrap();
+                    schedule_snapshot_update(this_file_path, line, &value_str, mode).unwrap();
                 }
             } else {
                 let mode = UpdateInlineSnapshotMode::Create;
-                schedule_snapshot_update(this_file_path, line, &s, mode).unwrap();
+                schedule_snapshot_update(this_file_path, line, &value_str, mode).unwrap();
             };
 
             Ok(None)
@@ -260,4 +263,27 @@ fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
     file.write();
     file.format();
     Ok(())
+}
+
+/// Format the value passed into snapshot macro to a snapshot, which
+/// can be either compared to existing snapshot or used as a value to
+/// update snapshots to.
+fn value_to_string<V: Debug>(value: V) -> String {
+    let mut s = format!("{:#?}", value);
+
+    // Undebug string newlines.
+    // Formatting string as `Debug` escapes all newline characters
+    // with `\\n` (escaped newlines), so they actually get printed as `\n`
+    // which is super hard to read and it defeats the purpose of multiline
+    // snapshots. This will replace them back to be displayed as newlines
+    s = s.replace("\\n", "\n");
+
+    if s.contains('\n') {
+        // If it's a multiline string, we always add a leading and trailing `\n`
+        // to avoid awkward macros like
+        //      snapshot!("hello
+        // world");
+        s = format!("\n{}\n", s);
+    }
+    s
 }
