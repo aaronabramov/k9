@@ -8,7 +8,6 @@ pub mod matches_regex;
 
 pub mod equal;
 pub mod err;
-pub mod experimental_snapshot;
 pub mod greater_than;
 pub mod greater_than_or_equal;
 pub mod lesser_than;
@@ -16,6 +15,7 @@ pub mod lesser_than_or_equal;
 pub mod matches_inline_snapshot;
 pub mod matches_snapshot;
 pub mod ok;
+pub mod snapshot;
 
 #[derive(Debug)]
 pub struct Assertion {
@@ -603,7 +603,7 @@ macro_rules! assert_err {
 }
 
 #[macro_export]
-macro_rules! experimental_snapshot {
+macro_rules! _snapshot {
     ($to_snap:expr) => {{
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
@@ -613,11 +613,9 @@ macro_rules! experimental_snapshot {
         let args_str = format!("{}", stringify!($to_snap).red(),);
         let s: String = $to_snap.into();
         $crate::assertions::make_assertion(
-            "experimental_snapshot",
+            "snapshot",
             args_str,
-            $crate::assertions::experimental_snapshot::experimental_snapshot(
-                s, None, line, column, file,
-            ),
+            $crate::assertions::snapshot::snapshot(s, None, line, column, file),
             None,
         )
     }};
@@ -634,15 +632,9 @@ macro_rules! experimental_snapshot {
         );
         let s: String = $to_snap.into();
         $crate::assertions::make_assertion(
-            "experimental_snapshot",
+            "snapshot",
             args_str,
-            $crate::assertions::experimental_snapshot::experimental_snapshot(
-                s,
-                Some($inline_snap),
-                line,
-                column,
-                file,
-            ),
+            $crate::assertions::snapshot::snapshot(s, Some($inline_snap), line, column, file),
             None,
         )
     }};
