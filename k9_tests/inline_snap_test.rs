@@ -28,7 +28,7 @@ fn inline_snapshot() {
 
 #[test]
 fn passing() {}
-    "#,
+"#,
     )?;
 
     let runner = p.run_tests().build().unwrap();
@@ -44,13 +44,7 @@ fn passing() {}
     let test_run = runner.run()?;
     assert!(test_run.success);
 
-    // Inline snapshot must be updated in the source.
-    // NOTE: we're using assert_equal! so we don't test inline snapshot feature
-    // using inline snapshots macro. If it's broken, the test could be broken as well
-    // and will give false positive.
-    k9_released::assert_equal!(
-        p.read_file("basic_tests.rs")?.as_str(),
-        "use k9::*;
+    let expected = "use k9::*;
 
 #[test]
 fn inline_snapshot() {
@@ -63,8 +57,19 @@ fn inline_snapshot() {
 
 #[test]
 fn passing() {}
-"
+";
+
+    // Inline snapshot must be updated in the source.
+    // NOTE: we're using assert_equal! so we don't test inline snapshot feature
+    // using inline snapshots macro. If it's broken, the test could be broken as well
+    // and will give false positive.
+    k9_local::assert_equal!(
+        k9_local::MultilineString::new(p.read_file("basic_tests.rs")?.as_str()),
+        k9_local::MultilineString::new(expected)
     );
+    k9_local::assert_equal!(p.read_file("basic_tests.rs")?.as_str(), expected);
+    k9_released::assert_equal!(p.read_file("basic_tests.rs")?.as_str(), expected);
+    assert_eq!(p.read_file("basic_tests.rs")?.as_str(), expected);
 
     Ok(())
 }
