@@ -280,6 +280,10 @@ fn value_to_string<V: Debug>(value: V) -> String {
     // snapshots. This will replace them back to be displayed as newlines
     s = s.replace("\\n", "\n");
 
+    // Debug representation of a string also has quotes escaped, which can get
+    // pretty noisy. We'll unescape them too.
+    s = s.replace("\\\"", "\"");
+
     let mut chars = s.chars();
 
     // `Debug` of a string also wraps the printed value in leading and trailing "

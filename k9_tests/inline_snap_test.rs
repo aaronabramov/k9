@@ -73,3 +73,11 @@ fn passing() {}
 
     Ok(())
 }
+
+#[test]
+fn json_serialization() {
+    k9_local::_snapshot!(
+        r#"{"key": ["value1", "value2"]}"#,
+        r#"{"key": ["value1", "value2"]}"#
+    );
+}
