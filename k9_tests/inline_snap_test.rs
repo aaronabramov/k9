@@ -22,8 +22,8 @@ use k9::*;
 
 #[test]
 fn inline_snapshot() {
-    assert_matches_inline_snapshot!(format!("{}", std::f64::consts::E));
-    k9::assert_matches_inline_snapshot!(format!("{}", std::f64::consts::E));
+    snapshot!(format!("{}", std::f64::consts::E));
+    k9::snapshot!(format!("{}", std::f64::consts::E));
 }
 
 #[test]
@@ -44,20 +44,17 @@ fn passing() {}
     let test_run = runner.run()?;
     assert!(test_run.success);
 
-    let expected = "use k9::*;
+    let expected = r###"use k9::*;
 
 #[test]
 fn inline_snapshot() {
-    assert_matches_inline_snapshot!(format!(\"{}\", std::f64::consts::E), r##\"2.718281828459045\"##);
-    k9::assert_matches_inline_snapshot!(
-        format!(\"{}\", std::f64::consts::E),
-        r##\"2.718281828459045\"##
-    );
+    snapshot!(format!("{}", std::f64::consts::E), "2.718281828459045");
+    k9::snapshot!(format!("{}", std::f64::consts::E), "2.718281828459045");
 }
 
 #[test]
 fn passing() {}
-";
+"###;
 
     // Inline snapshot must be updated in the source.
     // NOTE: we're using assert_equal! so we don't test inline snapshot feature

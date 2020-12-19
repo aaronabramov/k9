@@ -1,4 +1,3 @@
-use crate::assert_matches_inline_snapshot;
 use crate::assertion_message;
 use anyhow::Result;
 use k9::assert_greater_than_or_equal;
@@ -17,7 +16,7 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
     assert!(assert_greater_than_or_equal!(1.0f64, 1.0f64).is_none());
     assert!(assert_greater_than_or_equal!(9.8f64, 1.0f64).is_none());
 
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         assertion_message(assert_greater_than_or_equal!(1, 2)),
         "
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -46,7 +45,7 @@ Right value: 2
 #[test]
 fn with_context() {
     super::setup_test_env();
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         assertion_message(assert_greater_than_or_equal!(
             1,
             2,

@@ -1,4 +1,3 @@
-use crate::assert_matches_inline_snapshot;
 use crate::assertion_message;
 use k9::assert_equal;
 use k9::MultilineString;
@@ -13,7 +12,7 @@ fn test_assert_equal() {
     assert!(assert_equal!(1, 1, "some formatted debcription {} {:?}", 1, "dogs").is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         assertion_message(assert_equal!(2, 9)),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -30,7 +29,7 @@ Expected `Left` to equal `Right`:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 "##
     );
-    assert_matches_inline_snapshot!("hello", "hello");
+    k9_stable::assert_matches_inline_snapshot!("hello", "hello");
     assert!(assert_equal!(123, 123, "Expected two integers to be the same").is_none());
 }
 
@@ -70,7 +69,7 @@ fn multiline_struct_equality_test() {
         .expect("must fail")
         .get_failure_message();
 
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         crate::strip_ansi(&err),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -100,7 +99,7 @@ Expected `Left` to equal `Right`:
     );
 
     // test colors
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         &err,
         r##"
 [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
@@ -136,7 +135,7 @@ fn with_context() {
     let b = [1, 2, 99];
 
     super::setup_test_env();
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         assertion_message(assert_equal!(a, b, "Expected {:?} to equal {:?}", a, b)),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -170,7 +169,7 @@ fn multiline_string() {
         .expect("must fail")
         .get_failure_message();
 
-    assert_matches_inline_snapshot!(
+    k9_stable::assert_matches_inline_snapshot!(
         crate::strip_ansi(&err),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
