@@ -11,7 +11,9 @@
 
 ![k9_header](https://user-images.githubusercontent.com/940133/98482607-2140c200-21c8-11eb-84f0-af488323a49a.png)
 
-### Available macros
+## Snapshot testing + better assertions
+
+### Available test macros
 
 - `snapshot`
 - `assert_equal`
@@ -28,16 +30,29 @@
 
 See [https://docs.rs/k9](https://docs.rs/k9) for API documentation
 
-## Rust testing library that provides pretty assertion macros and snapshot testing.
+
+## `snapshot!()` macro
+
+Snapshot macro provides the functionality to capture the `Debug` representation
+of any value and make sure it does not change over time. 
+
+If it does change, the test will fail and print the difference between "old" and
+"new" values.
+
+If the change is expected and valid, running `cargo test` with
+`K9_UPDATE_SNAPSHOTS=1` env variable set will automatically take the new value
+and insert it into the test source code file as a second argument, after which
+all subsequent test runs should start passing again.
+
+![inline_snapshot_demo](https://user-images.githubusercontent.com/940133/102700607-93b7af80-4214-11eb-98ed-5f11347ce677.mov)
+
+
+## `assert_equal!()` macro
 
 Rust already provides a good built-in test runner and a set of assertion macros like `assert!` and `assert_eq!`.
 They work great for for quick unit tests, but once the codebase and test suites grows to a certain point it gets
 harder and harder to test things and keep tests readable.
 
-This crate is aiming to solve two issues:
-
-- Provide better output when a test fails
-- Provide a set of assertion macros for non trivial testing use cases.
 
 For example, when testing that two structs are equal using `assert_eq!` macro the output does not provide a lot of help
 in understanding why exactly this test failed.
@@ -101,88 +116,3 @@ What we probably want to see is:
 ![assert_matches_regex_example](https://user-images.githubusercontent.com/940133/84608051-35310380-ae76-11ea-87c8-c7c8b9ee3903.png)
 
 Which gives us enough context on what the problem is and how to fix it without for us having to go and run/debug the test first.
-
-# Snapshot testing
-
-When testing high level APIs some data structures that are returned by functions can become pretty large and manually testing every single field can become impossible
-
-```rust
-let response = make_api_call();
-assert_eq!(response.field_a, "some value");
-assert_eq!(response.field_b, "some value");
-assert_eq!(response.field_c, "some value");
-assert_eq!(response.field_d, "some value");
-// 100 more response fields
-```
-
-This is very unmaintainable and even small refactoring will end up in changing a lot of tests manually.
-
-Snapshot tests provide an automated way of testing that these large structs don't change their values over time, or, if they change, pinpoint
-to the exact difference between the value before code changes and after code changes.
-
-Snapshot testing involves multiple stages.
-First thing you need to do when creating a new test is using `assert_matches_snapshot!` macro that expects a string argument
-
-```rust
-assert_matches_snapshot!(format!("{:#?}", response));
-```
-
-First time you run the tests it will fail, saying that there is no existing snapshot found in the project.
-
-To create a snapshot you need to run tests with `K9_UPDATE_SNAPSHOTS=1` environment variable
-
-```sh
-K9_UPDATE_SNAPSHOTS=1 cargo test
-```
-
-this will create a snapshot file for this test shat will hold the context of the passed string:
-
-```
-src/
-├── __k9_snapshots__
-│   └── my_snapshot_test
-│       └── snapshot_test.snap
-```
-
-These files are expected to be checked into the repository and go through a code review.
-
-Then, after modifying your code (and potentially the value of returned `response` object) you can run the tests again. It will
-serialized a new `response` object into string and compare it with the previous (stored in the repo) snapshot while highlighting the difference
-
-![assert_matches_snapshot_example](https://user-images.githubusercontent.com/940133/84608050-34986d00-ae76-11ea-8fe1-4940ee5ad4ad.png)
-
-During this step you can examine whether the changes to the response object are intended or whether it's a newly introduced bug that needs to be fixed.
-
-Once the snapshot looks correct, it can be updated again using `K9_UPDATE_SNAPSHOTS=1` variable.
-
-## Inline Snapshots
-
-Sometimes `assert_matches_snapshot!` has its limitations, for example, there can't be more than one snapshot per test, snapshot file needs to be opened separately to see its content and sometimes too many files are hard to maintain.
-
-To simplify things a little bit, there is `snapshot!` macro. Instead of storing snapshot string in a separate file it will update rust source file directly with a string literal containing snapshot.
-
-```rust
-use k9::*;
-
-snapshot!(dbg!("hello".chars().rev().collect::<String>());
-```
-
-This will fail with an error saying that snapshot is missing. But running
-
-```sh
-K9_UPDATE_SNAPSHOTS=1 cargo test
-```
-
-will update the source code directly to:
-
-
-```rust
-use k9::*;
-
-snapshot!(dbg!("hello".chars().rev().collect::<String>(), "olleh);
-```
-
-And next time `cargo test` is run the tests will pass.
-
-
-![inline_snapshot_demo](https://user-images.githubusercontent.com/940133/85349610-8ff4db80-b4c4-11ea-97c6-2d6b04c7c9b0.gif)

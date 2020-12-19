@@ -93,9 +93,12 @@ pub fn initialize_colors() {
 }
 
 /// Asserts that two passed arguments are equal.
-/// panics if they are not
+/// Panics if they're not, using a pretty printed difference of
+/// [Debug](std::fmt::Debug) representations of the passed arguments.
 ///
-/// ```rust
+/// This is a drop-in replacement for [assert_eq][assert_eq] macro
+///
+/// ```
 /// use k9::assert_equal;
 ///
 /// // simple values
@@ -108,6 +111,18 @@ pub fn initialize_colors() {
 ///
 /// let a1 = A { name: "Kelly" };
 /// let a2 = A { name: "Kelly" };
+///
+/// assert_equal!(a1, a2);
+/// ```
+///
+/// ```should_panic
+/// # use k9::assert_equal;
+/// # #[derive(Debug, PartialEq)]
+/// # struct A {
+/// #     name: &'static str
+/// # }
+/// let a1 = A { name: "Kelly" };
+/// let a2 = A { name: "Rob" };
 ///
 /// // this will print the visual difference between two structs
 /// assert_equal!(a1, a2);
@@ -426,10 +441,9 @@ macro_rules! assert_err_matches_regex {
     }};
 }
 
-/// Formats passed value and asserts that it matches existing snaphot.
-/// If snapshot file for this test does not exist, test can be run with `K9_UPDATE_SNAPSHOTS=1`
-/// environment variable to either create or replace existing snapshot file.
-/// Snapshots will be written into `__k9_snapshots__` directory next to the test file.
+/// Same as [snapshot!()](./macro.snapshot.html) macro, but it takes a string as the
+/// only argument and stores the snapshot in a separate file instead of inlining
+/// it in the source code of the test.
 ///
 /// ```rust
 /// #[test]
@@ -562,6 +576,83 @@ macro_rules! assert_err {
     }};
 }
 
+/// Serializes the first argument into a string and compares it with
+/// the second argument, which is a snapshot string that was automatically generated
+/// during previous test runs. Panics if the values are not equal.
+///
+/// If second argument is missing, assertion will always fail by prompting to
+/// re-run the test in `update snapshots` mode.
+///
+/// If run in `update snapshots` mode, serialization of the first argument will
+/// be made into a string literal and inserted into source code as the second
+/// argument of this macro. (It will actually modify the file in the filesystem)
+///
+/// Typical workflow for this assertion is:
+///
+/// ```should_panic
+/// // Step 1:
+/// // - Take a result of some computation and pass it as a single argument to the macro
+/// // - Run the test
+/// // - Test will fail promting to re-run it in update mode
+/// use std::collections::BTreeMap;
+///
+/// k9::snapshot!((1..=3).rev().enumerate().collect::<BTreeMap<_, _>>());
+/// ```
+///
+/// ```text
+/// # Step 2:
+/// #   Run tests with K9_UPDATE_SNAPSHOTS=1 env variable set
+/// $ K9_UPDATE_SNAPSHOTS=1 cargo test
+/// ```
+///
+/// ```
+/// // Step 3:
+/// // After test run finishes and process exits successfully, the source code of the
+/// //       test file will be updated with the serialized value of the first argument.
+/// // All subsequent runs of this test will pass
+/// use std::collections::BTreeMap;
+///
+/// k9::snapshot!(
+///     (1..=3).rev().enumerate().collect::<BTreeMap<_, _>>(),
+///     "
+/// {
+///     0: 3,
+///     1: 2,
+///     2: 1,
+/// }
+/// "
+/// );
+/// ```
+///
+/// ```
+/// // If the logic behind first argument ever changes and affects the serialization
+/// // the test will fail and print the difference between the "old" and the "new" values
+/// use std::collections::BTreeMap;
+///
+/// k9::snapshot!(
+///     /// remove `.rev()`
+///     (1..=3).enumerate().collect::<BTreeMap<_, _>>(),
+///     "
+/// {
+///     0: 1,
+///     1: 2,
+///     2: 3,
+/// }
+/// "
+/// );
+/// ```
+///
+/// The test above will now fail with the following message:
+/// ```text
+/// Difference:
+/// {
+/// -     0: 3,
+/// +     0: 1,
+///       1: 2,
+/// -     2: 1,
+/// +     2: 3,
+/// }
+/// ```
 #[macro_export]
 macro_rules! snapshot {
     ($to_snap:expr) => {{
