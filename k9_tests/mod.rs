@@ -23,5 +23,5 @@ fn smoke_test() {
 
     assert_ok!(Ok(2));
 
-    assert_matches_inline_snapshot!(format!("{:?}", Some(true)), "Some(true)");
+    snapshot!(format!("{:?}", Some(true)), "Some(true)");
 }

@@ -36,9 +36,18 @@ fn passing() {}
 
     assert!(!test_run.success);
 
-    k9_released::assert_matches_inline_snapshot!(
-        format!("{:?}", test_run.test_cases),
-        "{\"basic_tests::inline_snapshot\": TestCaseResult { status: Fail }, \"basic_tests::passing\": TestCaseResult { status: Pass }}"
+    k9_released::snapshot!(
+        test_run.test_cases,
+        r#"
+{
+    "basic_tests::inline_snapshot": TestCaseResult {
+        status: Fail,
+    },
+    "basic_tests::passing": TestCaseResult {
+        status: Pass,
+    },
+}
+"#
     );
     let runner = p.run_tests().update_snapshots(true).build().unwrap();
     let test_run = runner.run()?;
