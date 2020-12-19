@@ -17,7 +17,7 @@ use std::sync::{Arc, Mutex};
 /// closure_captured_snap_by_ref();
 /// closure_captured_snap_by_ref();
 //
-/// k9::assert_matches_inline_snapshot!(snap.to_string(), "aaa");
+/// k9::snapshot!(snap.to_string(), "aaa");
 /// ```
 #[derive(Clone)]
 pub struct Snap(Arc<Mutex<String>>);

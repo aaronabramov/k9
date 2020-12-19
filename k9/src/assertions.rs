@@ -12,7 +12,6 @@ pub mod greater_than;
 pub mod greater_than_or_equal;
 pub mod lesser_than;
 pub mod lesser_than_or_equal;
-pub mod matches_inline_snapshot;
 pub mod matches_snapshot;
 pub mod ok;
 pub mod snapshot;
@@ -483,52 +482,6 @@ macro_rules! assert_matches_snapshot {
             args_str,
             $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
             Some($description),
-        )
-    }};
-}
-
-#[macro_export]
-macro_rules! assert_matches_inline_snapshot {
-    ($to_snap:expr) => {{
-        use $crate::__macros__::colored::*;
-        $crate::assertions::initialize_colors();
-        let line = line!();
-        let column = column!();
-        let file = file!();
-        let args_str = format!("{}", stringify!($to_snap).red(),);
-        let s: String = $to_snap.into();
-        $crate::assertions::make_assertion(
-            "assert_matches_inline_snapshot",
-            args_str,
-            $crate::assertions::matches_inline_snapshot::matches_inline_snapshot(
-                s, None, line, column, file,
-            ),
-            None,
-        )
-    }};
-    ($to_snap:expr, $inline_snap:literal) => {{
-        use $crate::__macros__::colored::*;
-        $crate::assertions::initialize_colors();
-        let line = line!();
-        let column = column!();
-        let file = file!();
-        let args_str = format!(
-            "{}, {}",
-            stringify!($to_snap).red(),
-            stringify!($inline_snap).green(),
-        );
-        let s: String = $to_snap.into();
-        $crate::assertions::make_assertion(
-            "assert_matches_inline_snapshot",
-            args_str,
-            $crate::assertions::matches_inline_snapshot::matches_inline_snapshot(
-                s,
-                Some($inline_snap),
-                line,
-                column,
-                file,
-            ),
-            None,
         )
     }};
 }
