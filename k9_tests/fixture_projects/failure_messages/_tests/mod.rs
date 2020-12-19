@@ -12,5 +12,5 @@ fn assert_equal_multiline_string() {
 
 #[test]
 fn snapshot_basic() {
-    _snapshot!("a");
+    snapshot!("a");
 }
