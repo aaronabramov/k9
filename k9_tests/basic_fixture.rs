@@ -121,12 +121,12 @@ World
 
     _snapshot!(
         r~"should"not"use"quotes"in"literal"~,
-        r~"should\"not\"use\"quotes\"in\"literal"~
+        r~"should"not"use"quotes"in"literal"~
     );
 
     _snapshot!(
         r~~~~"should use more than two "~~ for escaping"~~~~,
-        r~~~"should use more than two \"~~ for escaping"~~~
+        r~~~"should use more than two "~~ for escaping"~~~
     );
 }
 "##
