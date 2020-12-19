@@ -196,7 +196,7 @@ fn schedule_snapshot_update(
     with_source_file(&file_path.display().to_string(), |file| {
         let range = ast::find_snapshot_literal_range(
             &file.content,
-            "_snapshot",
+            "snapshot",
             original_line_num,
             mode == UpdateInlineSnapshotMode::Replace,
         )

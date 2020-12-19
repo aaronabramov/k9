@@ -3,7 +3,7 @@ use std::collections::BTreeSet;
 
 #[test]
 fn experimental_snapshot() {
-    _snapshot!(
+    snapshot!(
         "Hello\nWorld",
         "
 Hello
@@ -13,11 +13,11 @@ World
 
     let map: BTreeSet<u8> = vec![1, 2, 3, 0, 5, 8].into_iter().collect();
 
-    _snapshot!(map);
+    snapshot!(map);
 
-    _snapshot!("uses single quotes for literal");
+    snapshot!("uses single quotes for literal");
 
-    _snapshot!(r#"should"not"use"quotes"in"literal"#);
+    snapshot!(r#"should"not"use"quotes"in"literal"#);
 
-    _snapshot!(r####"should use more than two "## for escaping"####);
+    snapshot!(r####"should use more than two "## for escaping"####);
 }

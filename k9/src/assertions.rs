@@ -610,7 +610,7 @@ macro_rules! assert_err {
 }
 
 #[macro_export]
-macro_rules! _snapshot {
+macro_rules! snapshot {
     ($to_snap:expr) => {{
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
