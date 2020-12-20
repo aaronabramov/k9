@@ -7,7 +7,7 @@ fn basic_fixture_project() -> Result<()> {
 
     let test_run = project.run_matching_tests("basic")?;
 
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -20,7 +20,7 @@ fn basic_fixture_project() -> Result<()> {
 
     let test_run = project.run_matching_tests("experimental")?;
 
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -31,7 +31,7 @@ fn basic_fixture_project() -> Result<()> {
 "#
     );
 
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         test_run.stdout_sanitized,
         r"
 
@@ -82,7 +82,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
     test_run.assert_success()?;
 
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -93,7 +93,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 "#
     );
 
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         project
             .read_file("_tests/snapshots_experimental.rs")?
             .replace("#", "~"),
