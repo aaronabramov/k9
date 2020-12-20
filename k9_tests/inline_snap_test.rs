@@ -69,11 +69,11 @@ fn passing() {}
     // NOTE: we're using assert_equal! so we don't test inline snapshot feature
     // using inline snapshots macro. If it's broken, the test could be broken as well
     // and will give false positive.
-    k9_local::assert_equal!(
+    k9_released::assert_equal!(
         k9_local::MultilineString::new(p.read_file("basic_tests.rs")?.as_str()),
         k9_local::MultilineString::new(expected)
     );
-    k9_local::assert_equal!(p.read_file("basic_tests.rs")?.as_str(), expected);
+    k9_released::assert_equal!(p.read_file("basic_tests.rs")?.as_str(), expected);
     k9_released::assert_equal!(p.read_file("basic_tests.rs")?.as_str(), expected);
     assert_eq!(p.read_file("basic_tests.rs")?.as_str(), expected);
 
@@ -89,27 +89,39 @@ fn json_serialization() {
 }
 
 #[test]
-fn quote_serialization() {
+fn single_quotes_r_str() {
     k9_local::snapshot!(
         r#"this is 'wrapped' in single quotes in # string"#,
         "this is 'wrapped' in single quotes in # string"
     );
+}
 
+#[test]
+fn escaped_single_quotes() {
     k9_local::snapshot!(
         "this is \'wrapped\' in escaped single quotes",
         "this is 'wrapped' in escaped single quotes"
     );
+}
 
+#[test]
+fn single_quotes() {
     k9_local::snapshot!(
         "this is 'wrapped' in single quotes",
         "this is 'wrapped' in single quotes"
     );
+}
 
+#[test]
+fn escaped_double_quotes() {
     k9_local::snapshot!(
         "this is an escaped \" double quote ",
         r#"this is an escaped " double quote "#
     );
+}
 
+#[test]
+fn double_quotes_r_str() {
     k9_local::snapshot!(
         r#"this is an double " qote inside # stirng"#,
         r#"this is an double " qote inside # stirng"#
@@ -117,7 +129,7 @@ fn quote_serialization() {
 }
 
 #[test]
-fn escaping_serialization() {
+fn newline_escaping_serialization() {
     k9_local::snapshot!(
         r#" escaped nl char \n"#,
         // This is an annoying side effect, since having \n here makes it bouble

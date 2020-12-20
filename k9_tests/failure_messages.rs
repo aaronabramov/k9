@@ -37,7 +37,7 @@ fn get_error_message(test_name: &str) -> Result<String> {
 
 #[test]
 fn basic_fixture_project() -> Result<()> {
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         get_error_message("assert_equal_basic")?,
         r"
 
@@ -82,7 +82,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out
 
 #[test]
 fn assert_equal_multiline_string() -> Result<()> {
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         get_error_message("assert_equal_multiline_string")?,
         r#"
 
@@ -131,7 +131,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out
 
 #[test]
 fn snapshot_basic() -> Result<()> {
-    k9_local::snapshot!(
+    k9_released::snapshot!(
         get_error_message("snapshot_basic")?,
         r#"
 
