@@ -7,7 +7,7 @@ fn basic_fixture_project() -> Result<()> {
 
     let test_run = project.run_matching_tests("basic")?;
 
-    k9_released::snapshot!(
+    k9_local::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -20,7 +20,7 @@ fn basic_fixture_project() -> Result<()> {
 
     let test_run = project.run_matching_tests("experimental")?;
 
-    k9_released::snapshot!(
+    k9_local::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -31,9 +31,9 @@ fn basic_fixture_project() -> Result<()> {
 "#
     );
 
-    k9_released::snapshot!(
+    k9_local::snapshot!(
         test_run.stdout_sanitized,
-        "
+        r"
 
 running 0 tests
 
@@ -46,7 +46,7 @@ test snapshots_experimental::experimental_snapshot ... FAILED
 failures:
 
 ---- snapshots_experimental::experimental_snapshot stdout ----
-thread \'snapshots_experimental::experimental_snapshot\' panicked at \'
+thread 'snapshots_experimental::experimental_snapshot' panicked at '
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 snapshot!(map);
 
@@ -59,7 +59,7 @@ but that assertion did not have any inline snapshots.
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-\', <REPLACED>/src/assertions.rs:33:9
+', <REPLACED>/src/assertions.rs:33:9
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -82,7 +82,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
     test_run.assert_success()?;
 
-    k9_released::snapshot!(
+    k9_local::snapshot!(
         test_run.test_cases,
         r#"
 {
@@ -93,7 +93,7 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 "#
     );
 
-    k9_released::snapshot!(
+    k9_local::snapshot!(
         project
             .read_file("_tests/snapshots_experimental.rs")?
             .replace("#", "~"),

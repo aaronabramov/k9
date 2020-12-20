@@ -87,3 +87,44 @@ fn json_serialization() {
         r#"{"key": ["value1", "value2"]}"#
     );
 }
+
+#[test]
+fn quote_serialization() {
+    k9_local::snapshot!(
+        r#"this is 'wrapped' in single quotes in # string"#,
+        "this is 'wrapped' in single quotes in # string"
+    );
+
+    k9_local::snapshot!(
+        "this is \'wrapped\' in escaped single quotes",
+        "this is 'wrapped' in escaped single quotes"
+    );
+
+    k9_local::snapshot!(
+        "this is 'wrapped' in single quotes",
+        "this is 'wrapped' in single quotes"
+    );
+
+    k9_local::snapshot!(
+        "this is an escaped \" double quote ",
+        r#"this is an escaped " double quote "#
+    );
+
+    k9_local::snapshot!(
+        r#"this is an double " qote inside # stirng"#,
+        r#"this is an double " qote inside # stirng"#
+    );
+}
+
+#[test]
+fn escaping_serialization() {
+    k9_local::snapshot!(
+        r#" escaped nl char \n"#,
+        // This is an annoying side effect, since having \n here makes it bouble
+        // escaped, and unescaping it leaves trailing \
+        r"
+ escaped nl char \
+
+"
+    );
+}

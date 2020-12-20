@@ -278,11 +278,12 @@ fn value_to_string<V: Debug>(value: V) -> String {
     // with `\\n` (escaped newlines), so they actually get printed as `\n`
     // which is super hard to read and it defeats the purpose of multiline
     // snapshots. This will replace them back to be displayed as newlines
-    s = s.replace("\\n", "\n");
+    s = s.replace(r#"\n"#, "\n");
 
     // Debug representation of a string also has quotes escaped, which can get
     // pretty noisy. We'll unescape them too.
-    s = s.replace("\\\"", "\"");
+    s = s.replace(r#"\""#, r#"""#);
+    s = s.replace(r#"\'"#, r#"'"#);
 
     let mut chars = s.chars();
 
@@ -305,9 +306,10 @@ fn value_to_string<V: Debug>(value: V) -> String {
 }
 
 fn make_literal(s: &str) -> Result<String> {
-    // If snasphot doesn't contain any " characters
+    // If snasphot doesn't contain any of these characters characters
     // wrap the string in "" and use it as a literal
-    if !s.contains('"') {
+    // Otherwise we'd need to use r#""# literals to avoid crazy escaping rules
+    if !s.contains('"') && !s.contains('\'') && !s.contains('\\') {
         return Ok(format!(r#""{}""#, s));
     }
 
