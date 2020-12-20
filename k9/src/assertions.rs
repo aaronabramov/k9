@@ -624,7 +624,7 @@ macro_rules! assert_err {
 /// );
 /// ```
 ///
-/// ```
+/// ```should_panic
 /// // If the logic behind first argument ever changes and affects the serialization
 /// // the test will fail and print the difference between the "old" and the "new" values
 /// use std::collections::BTreeMap;
@@ -634,9 +634,9 @@ macro_rules! assert_err {
 ///     (1..=3).enumerate().collect::<BTreeMap<_, _>>(),
 ///     "
 /// {
-///     0: 1,
+///     0: 3,
 ///     1: 2,
-///     2: 3,
+///     2: 1,
 /// }
 /// "
 /// );
