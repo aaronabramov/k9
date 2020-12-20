@@ -7,25 +7,33 @@ fn basic_fixture_project() -> Result<()> {
 
     let test_run = project.run_matching_tests("basic")?;
 
-    k9_released::assert_matches_inline_snapshot!(
-        format!("\n{:?}\n", test_run.test_cases),
-        r##"
-{"snapshots_basic::snapshot_test": TestCaseResult { status: Pass }}
-"##
+    k9_local::snapshot!(
+        test_run.test_cases,
+        r#"
+{
+    "snapshots_basic::snapshot_test": TestCaseResult {
+        status: Pass,
+    },
+}
+"#
     );
 
     let test_run = project.run_matching_tests("experimental")?;
 
-    k9_released::assert_matches_inline_snapshot!(
-        format!("\n{:?}\n", test_run.test_cases),
-        r##"
-{"snapshots_experimental::experimental_snapshot": TestCaseResult { status: Fail }}
-"##
+    k9_local::snapshot!(
+        test_run.test_cases,
+        r#"
+{
+    "snapshots_experimental::experimental_snapshot": TestCaseResult {
+        status: Fail,
+    },
+}
+"#
     );
 
-    k9_released::assert_matches_inline_snapshot!(
-        format!("\n{}\n", test_run.stdout_sanitized),
-        r##"
+    k9_local::snapshot!(
+        test_run.stdout_sanitized,
+        r"
 
 running 0 tests
 
@@ -61,7 +69,7 @@ failures:
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
 
-"##
+"
     );
 
     let test_run = project
@@ -74,24 +82,30 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
     test_run.assert_success()?;
 
-    k9_released::assert_matches_inline_snapshot!(
-        format!("\n{:?}\n", test_run.test_cases),
-        r##"
-{"snapshots_experimental::experimental_snapshot": TestCaseResult { status: Pass }}
-"##
+    k9_local::snapshot!(
+        test_run.test_cases,
+        r#"
+{
+    "snapshots_experimental::experimental_snapshot": TestCaseResult {
+        status: Pass,
+    },
+}
+"#
     );
 
-    k9_released::assert_matches_inline_snapshot!(
+    k9_local::snapshot!(
         project
             .read_file("_tests/snapshots_experimental.rs")?
             .replace("#", "~"),
-        r##"use k9::*;
+        r#"
+use k9::*;
 use std::collections::BTreeSet;
 
 ~[test]
 fn experimental_snapshot() {
     snapshot!(
-        "Hello\nWorld",
+        "Hello\
+World",
         "
 Hello
 World
@@ -129,7 +143,8 @@ World
         r~~~"should use more than two "~~ for escaping"~~~
     );
 }
-"##
+
+"#
     );
 
     Ok(())

@@ -32,14 +32,14 @@ fn get_error_message(test_name: &str) -> Result<String> {
         "Expecting test run to fail, but it passed?"
     );
 
-    Ok(format!("\n{}\n", test_run.stdout_sanitized))
+    Ok(test_run.stdout_sanitized)
 }
 
 #[test]
 fn basic_fixture_project() -> Result<()> {
-    k9_released::assert_matches_inline_snapshot!(
+    k9_local::snapshot!(
         get_error_message("assert_equal_basic")?,
-        r##"
+        r"
 
 running 0 tests
 
@@ -75,16 +75,16 @@ failures:
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out
 
 
-"##
+"
     );
     Ok(())
 }
 
 #[test]
 fn assert_equal_multiline_string() -> Result<()> {
-    k9_released::assert_matches_inline_snapshot!(
+    k9_local::snapshot!(
         get_error_message("assert_equal_multiline_string")?,
-        r##"
+        r#"
 
 running 0 tests
 
@@ -99,15 +99,19 @@ failures:
 ---- assert_equal_multiline_string stdout ----
 thread 'assert_equal_multiline_string' panicked at '
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-assert_equal!("hello\nworld", "hello\nhow are you?");
+assert_equal!("hello\
+world", "hello\
+how are you?");
 
 Assertion Failure!
 
 
 Expected `Left` to equal `Right`:
 
-- "hello\nworld"
-+ "hello\nhow are you?"
+- "hello\
+world"
++ "hello\
+how are you?"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ', <REPLACED>/src/assertions.rs:33:9
@@ -120,16 +124,16 @@ failures:
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out
 
 
-"##
+"#
     );
     Ok(())
 }
 
 #[test]
 fn snapshot_basic() -> Result<()> {
-    k9_released::assert_matches_inline_snapshot!(
+    k9_local::snapshot!(
         get_error_message("snapshot_basic")?,
-        r##"
+        r#"
 
 running 0 tests
 
@@ -165,7 +169,7 @@ failures:
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out
 
 
-"##
+"#
     );
     Ok(())
 }
