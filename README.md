@@ -44,7 +44,7 @@ If the change is expected and valid, running `cargo test` with
 and insert it into the test source code file as a second argument, after which
 all subsequent test runs should start passing again.
 
-![inline_snapshot_demo](https://user-images.githubusercontent.com/940133/102700607-93b7af80-4214-11eb-98ed-5f11347ce677.mov)
+![inline_snapshot_demo](https://user-images.githubusercontent.com/940133/102737400-ed030a00-430c-11eb-90ac-66d4d24c9acd.gif)
 
 
 ## `assert_equal!()` macro
