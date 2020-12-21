@@ -29,10 +29,6 @@ pub struct Assertion {
 }
 
 impl Assertion {
-    pub fn panic(&self) {
-        panic!(self.get_failure_message());
-    }
-
     pub fn get_failure_message(&self) -> String {
         let message = format!(
             "
@@ -64,7 +60,25 @@ impl Assertion {
     }
 }
 
-pub fn make_assertion(
+#[macro_export]
+macro_rules! make_assertion {
+    ($name:expr, $args_str:expr, $failure_message:expr, $description:expr,) => {{
+        let assertion = $crate::assertions::make_assertion_impl(
+            $name,
+            $args_str,
+            $failure_message,
+            $description,
+        );
+        if let Some(assertion) = &assertion {
+            if $crate::config::should_panic() {
+                panic!(assertion.get_failure_message());
+            }
+        }
+        assertion
+    }};
+}
+
+pub fn make_assertion_impl(
     name: &str,
     args_str: String,
     failure_message: Option<String>,
@@ -77,9 +91,6 @@ pub fn make_assertion(
             name: name.to_string(),
             args_str,
         };
-        if crate::config::should_panic() {
-            assertion.panic();
-        }
         Some(assertion)
     } else {
         None
@@ -141,7 +152,7 @@ macro_rules! assert_equal {
         match  (&$left, &$right) {
             (left, right) => {
                 let fail = *left != *right;
-                $crate::assertions::make_assertion(
+                $crate::make_assertion!(
                     "assert_equal",
                     args_str,
                     $crate::assertions::equal::assert_equal(left, right, fail),
@@ -163,7 +174,7 @@ macro_rules! assert_equal {
         match  (&$left, &$right) {
             (left, right) => {
                 let fail = *left != *right;
-                $crate::assertions::make_assertion(
+                $crate::make_assertion!(
                     "assert_equal",
                     args_str,
                     $crate::assertions::equal::assert_equal(left, right, fail),
@@ -192,7 +203,7 @@ macro_rules! assert_greater_than {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_greater_than",
             args_str,
             $crate::assertions::greater_than::assert_greater_than($left, $right),
@@ -208,7 +219,7 @@ macro_rules! assert_greater_than {
             stringify!($right).green(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_greater_than",
             args_str,
             $crate::assertions::greater_than::assert_greater_than($left, $right),
@@ -236,7 +247,7 @@ macro_rules! assert_greater_than_or_equal {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_greater_than_or_equal",
             args_str,
             $crate::assertions::greater_than_or_equal::assert_greater_than_or_equal($left, $right),
@@ -252,7 +263,7 @@ macro_rules! assert_greater_than_or_equal {
             stringify!($right).green(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_greater_than_or_equal",
             args_str,
             $crate::assertions::greater_than_or_equal::assert_greater_than_or_equal($left, $right),
@@ -279,7 +290,7 @@ macro_rules! assert_lesser_than {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_lesser_than",
             args_str,
             $crate::assertions::lesser_than::assert_lesser_than($left, $right),
@@ -295,7 +306,7 @@ macro_rules! assert_lesser_than {
             stringify!($right).green(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_lesser_than",
             args_str,
             $crate::assertions::lesser_than::assert_lesser_than($left, $right),
@@ -323,7 +334,7 @@ macro_rules! assert_lesser_than_or_equal {
             stringify!($left).red(),
             stringify!($right).green(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_lesser_than_or_equal",
             args_str,
             $crate::assertions::lesser_than_or_equal::assert_lesser_than_or_equal($left, $right),
@@ -339,7 +350,7 @@ macro_rules! assert_lesser_than_or_equal {
             stringify!($right).green(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_lesser_than_or_equal",
             args_str,
             $crate::assertions::lesser_than_or_equal::assert_lesser_than_or_equal($left, $right),
@@ -364,7 +375,7 @@ macro_rules! assert_matches_regex {
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!("{}, {}", stringify!($s).red(), stringify!($regex).green());
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_matches_regex",
             args_str,
             $crate::assertions::matches_regex::assert_matches_regex($s, $regex),
@@ -380,7 +391,7 @@ macro_rules! assert_matches_regex {
             stringify!($regex).green(),
             stringify!($description).dimmed()
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_matches_regex",
             args_str,
             $crate::assertions::matches_regex::assert_matches_regex($s, $regex),
@@ -416,7 +427,7 @@ macro_rules! assert_err_matches_regex {
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!("{}, {}", stringify!($err).red(), stringify!($regex).green(),);
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_err_matches_regex",
             args_str,
             $crate::assertions::err_matches_regex::assert_err_matches_regex($err, $regex),
@@ -432,7 +443,7 @@ macro_rules! assert_err_matches_regex {
             stringify!($regex).green(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_err_matches_regex",
             args_str,
             $crate::assertions::err_matches_regex::assert_err_matches_regex($err, $regex),
@@ -473,7 +484,7 @@ macro_rules! assert_matches_snapshot {
         let column = column!();
         let file = file!();
         let args_str = format!("{}", stringify!($to_snap).red(),);
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_matches_snapshot",
             args_str,
             $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
@@ -491,7 +502,7 @@ macro_rules! assert_matches_snapshot {
             stringify!($to_snap).red(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_matches_snapshot",
             args_str,
             $crate::assertions::matches_snapshot::snap_internal($to_snap, line, column, file),
@@ -514,7 +525,7 @@ macro_rules! assert_ok {
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!("{}", stringify!($left).red());
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_ok",
             args_str,
             $crate::assertions::ok::assert_ok($left),
@@ -529,7 +540,7 @@ macro_rules! assert_ok {
             stringify!($left).red(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_ok",
             args_str,
             $crate::assertions::ok::assert_ok($left),
@@ -552,7 +563,7 @@ macro_rules! assert_err {
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!("{}", stringify!($left).red());
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_err",
             args_str,
             $crate::assertions::err::assert_err($left),
@@ -567,7 +578,7 @@ macro_rules! assert_err {
             stringify!($left).red(),
             stringify!($description).dimmed(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "assert_err",
             args_str,
             $crate::assertions::err::assert_err($left),
@@ -662,7 +673,7 @@ macro_rules! snapshot {
         let column = column!();
         let file = file!();
         let args_str = format!("{}", stringify!($to_snap).red(),);
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "snapshot",
             args_str,
             $crate::assertions::snapshot::snapshot($to_snap, None, line, column, file),
@@ -680,7 +691,7 @@ macro_rules! snapshot {
             stringify!($to_snap).red(),
             stringify!($inline_snap).green(),
         );
-        $crate::assertions::make_assertion(
+        $crate::make_assertion!(
             "snapshot",
             args_str,
             $crate::assertions::snapshot::snapshot(

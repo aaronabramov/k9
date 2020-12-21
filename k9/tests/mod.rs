@@ -5,7 +5,7 @@ mod assertions;
 #[macro_export]
 macro_rules! assert_matches_inline_snapshot {
     ( $( $arg:expr ),* ) => {{
-        k9::assert_matches_inline_snapshot!( $( $arg ),* ).map(|a| a.panic())
+        k9::assert_matches_inline_snapshot!( $( $arg ),* ).map(|a| panic!(a))
     }};
 }
 
