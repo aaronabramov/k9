@@ -59,7 +59,7 @@ but that assertion did not have any inline snapshots.
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', <REPLACED>/src/assertions.rs:33:9
+', _tests/snapshots_experimental.rs:16:5
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 

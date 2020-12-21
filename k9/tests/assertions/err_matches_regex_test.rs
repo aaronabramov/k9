@@ -12,7 +12,7 @@ fn test() -> Result<()> {
         .expect("must fail")
         .get_failure_message();
 
-    assert_matches_snapshot!(err).map(|a| a.panic());
+    assert_matches_snapshot!(err).map(|a| panic!(a));
     Ok(())
 }
 
@@ -24,5 +24,5 @@ fn test_when_ok() {
         .expect("must_fail")
         .get_failure_message();
 
-    assert_matches_snapshot!(err).map(|a| a.panic());
+    assert_matches_snapshot!(err).map(|a| panic!(a));
 }

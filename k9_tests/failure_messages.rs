@@ -36,7 +36,7 @@ fn get_error_message(test_name: &str) -> Result<String> {
 }
 
 #[test]
-fn basic_fixture_project() -> Result<()> {
+fn assert_equals_basic() -> Result<()> {
     k9_released::snapshot!(
         get_error_message("assert_equal_basic")?,
         r"
@@ -65,7 +65,7 @@ Expected `Left` to equal `Right`:
 + 2
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', <REPLACED>/src/assertions.rs:33:9
+', _tests/mod.rs:5:5
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -114,7 +114,7 @@ world"
 how are you?"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', <REPLACED>/src/assertions.rs:33:9
+', _tests/mod.rs:10:5
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -159,7 +159,7 @@ but that assertion did not have any inline snapshots.
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', <REPLACED>/src/assertions.rs:33:9
+', _tests/mod.rs:15:5
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
