@@ -5,7 +5,7 @@ use std::sync::Mutex;
 
 use std::collections::BTreeMap;
 pub fn my_function() -> BTreeMap<usize, String> {
-    (2..=6)
+    (3..=8)
         .map(|i| (i, "a".repeat(i).to_string()))
         .collect::<BTreeMap<_, _>>()
 }
