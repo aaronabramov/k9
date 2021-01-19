@@ -3,6 +3,13 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
+use std::collections::BTreeMap;
+pub fn my_function() -> BTreeMap<usize, String> {
+    (1..=7)
+        .map(|i| (i, "a".repeat(i).to_string()))
+        .collect::<BTreeMap<_, _>>()
+}
+
 lazy_static! {
     // Can't run tests in the same directory in paraller, so we'll put it behind a mutex
     // to restrict test runs to 1 at a time only.
