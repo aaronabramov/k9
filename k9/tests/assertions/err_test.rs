@@ -15,7 +15,7 @@ fn test_assert_err() -> Result<()> {
     let failure_message = assert_err!(Ok([1, 2, 3]))
         .expect("must fail")
         .get_failure_message();
-    assert_matches_snapshot!(failure_message).map(|a| panic!(a));
+    assert_matches_snapshot!(failure_message).map(|a| panic!("{:?}", a));
     Ok(())
 }
 
@@ -25,5 +25,5 @@ fn with_context() {
     let err = assert_err!(Ok(1), "Expected Value to be Err(T)")
         .expect("must fail")
         .get_failure_message();
-    assert_matches_snapshot!(err).map(|a| panic!(a));
+    assert_matches_snapshot!(err).map(|a| panic!("{:?}", a));
 }

@@ -11,6 +11,6 @@ fn test_assert_equal() -> Result<()> {
         .expect("must fail")
         .get_failure_message();
 
-    assert_matches_snapshot!(err).map(|a| panic!(a));
+    assert_matches_snapshot!(err).map(|a| panic!("{:?}", a));
     Ok(())
 }
