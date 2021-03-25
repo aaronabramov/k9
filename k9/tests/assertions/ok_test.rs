@@ -21,7 +21,7 @@ fn test_assert_ok() -> Result<()> {
     let failure_message = assert_ok!(Err("Parsing Error"))
         .expect("must fail")
         .get_failure_message();
-    assert_matches_snapshot!(failure_message).map(|a| panic!(a));
+    assert_matches_snapshot!(failure_message).map(|a| panic!("{:?}", a));
     Ok(())
 }
 
@@ -31,5 +31,5 @@ fn with_context() {
     let err = assert_ok!(Err("Version Mismatch!"), "Expected Value to be Ok(T)")
         .expect("must fail")
         .get_failure_message();
-    assert_matches_snapshot!(err).map(|a| panic!(a));
+    assert_matches_snapshot!(err).map(|a| panic!("{:?}", a));
 }

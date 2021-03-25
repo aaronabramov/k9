@@ -71,7 +71,7 @@ macro_rules! make_assertion {
         );
         if let Some(assertion) = &assertion {
             if $crate::config::should_panic() {
-                panic!(assertion.get_failure_message());
+                panic!("{}", assertion.get_failure_message());
             }
         }
         assertion

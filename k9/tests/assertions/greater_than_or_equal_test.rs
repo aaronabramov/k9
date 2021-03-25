@@ -6,7 +6,7 @@ use k9::assert_greater_than_or_equal;
 fn test_assert_greater_than_or_equal() -> Result<()> {
     super::setup_test_env();
 
-    assert_greater_than_or_equal!(2, 1).map(|a| panic!(a));
+    assert_greater_than_or_equal!(2, 1).map(|a| panic!("{:?}", a));
     assert!(assert_greater_than_or_equal!(1, 1).is_none());
     assert!(assert_greater_than_or_equal!(0, 1).is_some());
     assert!(assert_greater_than_or_equal!("234", "cde").is_some());
