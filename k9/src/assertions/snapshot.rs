@@ -152,7 +152,7 @@ where
 }
 
 fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
-    let diff = crate::string_diff::colored_diff(&snapshot, &s);
+    let diff = crate::string_diff::colored_diff(snapshot, s);
 
     diff.map(|diff| {
         format!(

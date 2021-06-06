@@ -70,7 +70,7 @@ pub fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Vec<String> {
         if let Some(range) = next_range {
             match line_number {
                 n if n < range.start.line => {
-                    next_chunk.push_str(&line);
+                    next_chunk.push_str(line);
                     next_chunk.push('\n');
                 }
                 n if n == range.start.line => {
@@ -112,7 +112,7 @@ pub fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Vec<String> {
                 ),
             };
         } else {
-            next_chunk.push_str(&line);
+            next_chunk.push_str(line);
             next_chunk.push('\n');
         }
     }
