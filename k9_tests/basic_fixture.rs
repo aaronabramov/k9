@@ -56,6 +56,18 @@ Expected string to match inline snapshot
 
 but that assertion did not have any inline snapshots.
 
+Received value:
+
+{
+    0,
+    1,
+    2,
+    3,
+    5,
+    8,
+}
+
+
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

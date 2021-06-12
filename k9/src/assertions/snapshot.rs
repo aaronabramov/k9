@@ -54,7 +54,7 @@ pub fn snapshot_internal<V: Debug>(
     let value_str = value_to_string(value);
     match (snapshot, crate::config::CONFIG.update_mode) {
         (Some(snapshot), false) => Ok(snapshot_matching_message(&value_str, snapshot)),
-        (None, false) => Ok(Some(empty_snapshot_message())),
+        (None, false) => Ok(Some(empty_snapshot_message(&value_str))),
         (_, true) => {
             let line = line as usize;
 
@@ -171,17 +171,21 @@ fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
     })
 }
 
-fn empty_snapshot_message() -> String {
+fn empty_snapshot_message(s: &str) -> String {
     format!(
         "Expected {string_desc} to match {snapshot_desc}
 
 but that assertion did not have any inline snapshots.
+
+Received value:
+{received_value}
 
 {update_instructions}
 ",
         string_desc = "string".red(),
         snapshot_desc = "inline snapshot".green(),
         update_instructions = crate::config::update_instructions(),
+        received_value = s.green(),
     )
 }
 
