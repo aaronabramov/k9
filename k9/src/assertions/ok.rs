@@ -1,7 +1,7 @@
 use colored::*;
 use std::fmt::Debug;
 
-pub fn assert_ok<T: Debug>(value: Result<T, T>) -> Option<String> {
+pub fn assert_ok<T: Debug, E: Debug>(value: Result<T, E>) -> Option<String> {
     if value.is_ok() {
         None
     } else {
