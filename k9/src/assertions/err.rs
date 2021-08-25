@@ -1,7 +1,7 @@
 use colored::*;
 use std::fmt::Debug;
 
-pub fn assert_err<T: Debug>(value: Result<T, T>) -> Option<String> {
+pub fn assert_err<T: Debug, E: Debug>(value: Result<T, E>) -> Option<String> {
     if value.is_err() {
         None
     } else {
@@ -11,7 +11,7 @@ pub fn assert_err<T: Debug>(value: Result<T, T>) -> Option<String> {
 Got: {value}
         ",
             value_desc = "Value".red(),
-            type_desc = "Err(T)".green(),
+            type_desc = "Err(E)".green(),
             value = format!("{:?}", value).red(),
         ))
     }

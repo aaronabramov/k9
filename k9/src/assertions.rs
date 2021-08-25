@@ -517,7 +517,8 @@ macro_rules! assert_matches_snapshot {
 /// ```rust
 /// use k9::assert_ok;
 ///
-/// assert_ok!(Ok(2));
+/// let result: Result<_, ()> = Ok(2);
+/// assert_ok!(result);
 /// ```
 #[macro_export]
 macro_rules! assert_ok {
@@ -549,13 +550,14 @@ macro_rules! assert_ok {
     }};
 }
 
-/// Asserts if value is Err(T).
+/// Asserts if value is Err(E).
 /// panics if it is not
 ///
 /// ```rust
 /// use k9::assert_err;
 ///
-/// assert_err!(Err("Invalid path"));
+/// let result: Result<(), _> = Err("invalid path");
+/// assert_err!(result);
 /// ```
 #[macro_export]
 macro_rules! assert_err {
