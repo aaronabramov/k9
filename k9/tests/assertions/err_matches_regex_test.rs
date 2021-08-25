@@ -26,3 +26,14 @@ fn test_when_ok() {
 
     assert_matches_snapshot!(err).map(|a| panic!("{:?}", a));
 }
+
+#[test]
+fn with_context() {
+    super::setup_test_env();
+    let result: Result<()> = Err(anyhow::anyhow!("123 error message"));
+    let err = assert_err_matches_regex!(result, "\\d{3}-\\d{5}", "error should contain numeric id")
+        .expect("must fail")
+        .get_failure_message();
+
+    assert_matches_snapshot!(err).map(|a| panic!("{:?}", a));
+}

@@ -434,20 +434,20 @@ macro_rules! assert_err_matches_regex {
             None,
         )
     }};
-    ($s:expr, $regex:expr, $context:expr) => {{
+    ($err:expr, $regex:expr, $context:expr) => {{
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();
         let args_str = format!(
             "{}, {}, {}",
             stringify!($err).red(),
             stringify!($regex).green(),
-            stringify!($description).dimmed(),
+            stringify!($context).dimmed(),
         );
         $crate::make_assertion!(
             "assert_err_matches_regex",
             args_str,
             $crate::assertions::err_matches_regex::assert_err_matches_regex($err, $regex),
-            Some($description),
+            Some($context),
         )
     }};
 }
