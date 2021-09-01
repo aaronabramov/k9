@@ -9,7 +9,7 @@ use k9_released::*;
 fn smoke_test() {
     assert_equal!(1, 1);
 
-    assert_err!(Err("Error!"));
+    assert_err!(Result::<(), _>::Err("Error!"));
 
     assert_greater_than!(2, 1);
 
@@ -21,7 +21,7 @@ fn smoke_test() {
 
     assert_matches_regex!("abc", "abc");
 
-    assert_ok!(Ok(2));
+    assert_ok!(Result::<_, ()>::Ok(2));
 
     snapshot!(format!("{:?}", Some(true)), "Some(true)");
 }
