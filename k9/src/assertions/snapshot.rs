@@ -142,13 +142,13 @@ where
     F: FnOnce(&mut SourceFile) -> Result<T>,
 {
     let mut map = SOURCE_FILES.lock().expect("poisoned lock");
-    let mut source_file = map
+    let source_file = map
         .as_mut()
         .context("Missing source file")?
         .entry(absolute_path.to_string())
         .or_insert_with(|| SourceFile::new(absolute_path.to_string()).unwrap());
 
-    f(&mut source_file)
+    f(source_file)
 }
 
 fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {

@@ -70,6 +70,7 @@ macro_rules! make_assertion {
             $description,
         );
         if let Some(assertion) = &assertion {
+            #[allow(clippy::if_then_panic)]
             if $crate::config::should_panic() {
                 panic!("{}", assertion.get_failure_message());
             }
