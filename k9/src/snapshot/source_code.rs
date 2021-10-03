@@ -53,6 +53,7 @@ pub fn split_by_ranges(content: String, ranges: Vec<&Range>) -> Vec<String> {
     // ranges must be pre-sorted
     while let Some(range) = iter.next() {
         if let Some(next_range) = iter.peek() {
+            #[allow(clippy::all)]
             if range.end.line >= next_range.start.line {
                 panic!("overlapping ranges! can be only one inline snapshot macro per line");
             }

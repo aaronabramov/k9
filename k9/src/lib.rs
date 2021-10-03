@@ -3,7 +3,6 @@ see <https://github.com/aaronabramov/k9> for high level description of the libra
 */
 
 #![cfg_attr(feature = "custom_comparison_formatters", feature(specialization))]
-#![allow(clippy::if_then_panic)]
 
 pub mod assertions;
 pub mod config;
