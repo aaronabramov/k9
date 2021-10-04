@@ -1,3 +1,5 @@
+#![allow(clippy::if_then_panic)]
+
 mod basic_fixture;
 mod failure_messages;
 mod inline_snap_test;
