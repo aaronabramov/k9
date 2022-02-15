@@ -310,7 +310,7 @@ fn value_to_string<V: Debug>(value: V) -> String {
 }
 
 fn make_literal(s: &str) -> Result<String> {
-    // If snasphot doesn't contain any of these characters characters
+    // If snapshot doesn't contain any of these characters characters
     // wrap the string in "" and use it as a literal
     // Otherwise we'd need to use r#""# literals to avoid crazy escaping rules
     if !s.contains('"') && !s.contains('\'') && !s.contains('\\') {

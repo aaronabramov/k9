@@ -73,7 +73,7 @@ fn test_eq() {
 }
 ```
 
-All we get is usually a wall of wite text collapsed into a single line and you have to find the difference between two structs yourself. Which becomes very time consuming when structs are 10+ fields.
+All we get is usually a wall of text collapsed into a single line and you have to find the difference between two structs yourself. Which becomes very time consuming when structs are 10+ fields.
 
 ```
 ---- eq::test_eq stdout ----

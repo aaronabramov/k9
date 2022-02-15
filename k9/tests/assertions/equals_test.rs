@@ -9,7 +9,7 @@ fn test_assert_equal() {
     assert!(assert_equal!(1, 1).is_none());
     assert!(assert_equal!(vec![1, 2, 3], [1, 2, 3]).is_none());
     assert!(assert_equal!(1, 1, "some description").is_none());
-    assert!(assert_equal!(1, 1, "some formatted debcription {} {:?}", 1, "dogs").is_none());
+    assert!(assert_equal!(1, 1, "some formatted description {} {:?}", 1, "dogs").is_none());
     assert!(assert_equal!("lol", &String::from("lol")).is_none());
 
     k9_stable::assert_matches_inline_snapshot!(

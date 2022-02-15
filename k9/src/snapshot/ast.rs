@@ -86,7 +86,7 @@ pub fn find_snapshot_literal_range<S: Into<String>>(
             anyhow::bail!(
                 r#"
 Failed to extract a snapshot literal from a snapshot macro call.
-Snapshot literal must be the last argument to a macro call and must be a stiring literal. e.g.
+Snapshot literal must be the last argument to a macro call and must be a string literal. e.g.
 
 assert_matches_inline_snapshot!(12345, "12345");
                                        ^     ^
@@ -120,7 +120,7 @@ Given macro call:
 }
 
 /// Convert proc_macro2 Span struct to local Range struct, which indexes
-/// for Lines and Columns staritng from 1 and not 0
+/// for Lines and Columns starting from 1 and not 0
 fn syn_span_to_range(span: Span) -> Range {
     Range {
         start: LineColumn {
@@ -177,7 +177,7 @@ fn main() {                                         // 2
             format!("{:?}", err),
             r##"
 Failed to extract a snapshot literal from a snapshot macro call.
-Snapshot literal must be the last argument to a macro call and must be a stiring literal. e.g.
+Snapshot literal must be the last argument to a macro call and must be a string literal. e.g.
 
 assert_matches_inline_snapshot!(12345, "12345");
                                        ^     ^

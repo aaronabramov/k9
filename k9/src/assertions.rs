@@ -18,7 +18,7 @@ pub mod snapshot;
 
 #[derive(Debug)]
 pub struct Assertion {
-    /// Description of what's being asserted to provide a bit more context in the error mesasge
+    /// Description of what's being asserted to provide a bit more context in the error message
     pub description: Option<String>,
     /// the name of the assertion macro that was invoked. e.g. `assert_equals`
     pub name: String,
@@ -607,7 +607,7 @@ macro_rules! assert_err {
 /// // Step 1:
 /// // - Take a result of some computation and pass it as a single argument to the macro
 /// // - Run the test
-/// // - Test will fail promting to re-run it in update mode
+/// // - Test will fail prompting to re-run it in update mode
 /// use std::collections::BTreeMap;
 ///
 /// k9::snapshot!((1..=3).rev().enumerate().collect::<BTreeMap<_, _>>());

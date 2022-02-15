@@ -56,7 +56,7 @@ fn is_update_mode() -> bool {
         // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
         //
         // NOTE: using compile time vars is a bit sketchy, because technically you can compile the test suite
-        // once and re-run the compiled version multiple times in scenarious where you don't want to update
+        // once and re-run the compiled version multiple times in scenarios where you don't want to update
         if option_env!("K9_UPDATE_SNAPSHOTS").is_some() {
             return true;
         }
