@@ -9,7 +9,7 @@ pub fn get_project_root_path() -> PathBuf {
     if crate::config::CONFIG.built_with_buck {
         let pwd = std::env::var("PWD").expect(
             "
-`BUCK_BUILD_ID` enviroment variable was present, which means this project is being built with
+`BUCK_BUILD_ID` environment variable was present, which means this project is being built with
 buck and relies on `PWD` env variable to contain the project root, but `PWD` wasn't there",
         );
         return PathBuf::from(pwd);
@@ -21,7 +21,7 @@ buck and relies on `PWD` env variable to contain the project root, but `PWD` was
     PathBuf::from(project_root)
 }
 
-// Crate root will be the root of the project + directory of one of the worspace crates (if exists)
+// Crate root will be the root of the project + directory of one of the workspace crates (if exists)
 // To find this we'll need to use any `file!()` macro value to test if the file exist using
 // an absolute path.
 pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
@@ -64,14 +64,14 @@ pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
 // using workspaces.
 //
 // When using a `file!()` macro in a crate that is a part of a workspace it will return
-// a relative path from the worspace root.
+// a relative path from the workspace root.
 // At the same time CARGO_MANIFEST env variable with hold the value of the crate's Cargo.toml
 // path and not the workspace Cargo.toml.
 //
 // e.g.
 //    /home
 //        my_project/
-//          Cargo.toml    <---- worspace definition
+//          Cargo.toml    <---- workspace definition
 //          nested_crate/
 //              Cargo.toml    <---------- other project's manifest
 //              lib.rs      <------- file!() macro used here
