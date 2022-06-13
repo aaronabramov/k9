@@ -246,7 +246,7 @@ fn update_inline_snapshots(mut file: SourceFile) -> Result<()> {
                     UpdateInlineSnapshotMode::Replace => "",
                 };
 
-                let literal = make_literal(&update.new_value)?;
+                let literal = make_literal(&update.new_value);
 
                 let update_string = format!(
                     "{comma_separator}{to_add}",
@@ -309,24 +309,23 @@ fn value_to_string<V: Debug>(value: V) -> String {
     s
 }
 
-fn make_literal(s: &str) -> Result<String> {
+fn make_literal(s: &str) -> String {
     // If snapshot doesn't contain any of these characters characters
     // wrap the string in "" and use it as a literal
     // Otherwise we'd need to use r#""# literals to avoid crazy escaping rules
     if !s.contains('"') && !s.contains('\'') && !s.contains('\\') {
-        return Ok(format!(r#""{}""#, s));
+        return format!(r#""{}""#, s);
     }
 
-    // Otherwise try incrementing the number of # and see if
-    // that results in a properly escaped string.
-    for i in 0..5 {
-        let esc = "#".repeat(i);
-        let end = format!("\"{}", &esc);
-
-        if !s.contains(&end) {
-            return Ok(format!(r#"r{}"{}"{}"#, esc, s, esc));
+    // Otherwise find the longest string of "##... and generate an appropriate escape sequence.
+    let mut max = 0;
+    let mut chars = s.chars();
+    while let Some(c) = chars.next() {
+        if c == '\"' {
+            max = max.max(chars.by_ref().take_while(|c| *c == '#').count())
         }
     }
 
-    anyhow::bail!("Failed to create snapshot string literal")
+    let esc = "#".repeat(max + 1);
+    format!(r#"r{}"{}"{}"#, esc, s, esc)
 }
