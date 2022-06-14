@@ -1,5 +1,6 @@
 use colored::*;
 use diff::{lines, Result};
+use std::fmt::Write;
 
 pub fn colored_diff(left: &str, right: &str) -> Option<String> {
     let mut result = String::new();
@@ -13,13 +14,13 @@ pub fn colored_diff(left: &str, right: &str) -> Option<String> {
     for line in lines {
         match line {
             Result::Left(l) => {
-                result.push_str(&format!("{} {}\n", "-".red(), &l.red()));
+                writeln!(result, "{} {}", "-".red(), &l.red()).unwrap();
             }
             Result::Right(r) => {
-                result.push_str(&format!("{} {}\n", "+".green(), &r.green()));
+                writeln!(result, "{} {}", "+".green(), &r.green()).unwrap();
             }
             Result::Both(l, _r) => {
-                result.push_str(&format!("  {}\n", &l.dimmed()));
+                writeln!(result, "  {}", &l.dimmed()).unwrap();
             }
         }
     }
