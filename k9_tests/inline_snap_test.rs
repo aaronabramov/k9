@@ -17,18 +17,19 @@ mod basic_tests;
 
     p.write_file(
         "basic_tests.rs",
-        r#"
+        r##"
 use k9::*;
 
 #[test]
 fn inline_snapshot() {
     snapshot!(format!("{}", std::f64::consts::E));
     k9::snapshot!(format!("{}", std::f64::consts::E));
+    snapshot!(format!("much to escape--> \"{} <--in here", "#".repeat(7)));
 }
 
 #[test]
 fn passing() {}
-"#,
+"##,
     )?;
 
     let runner = p.run_tests().build().unwrap();
@@ -53,17 +54,21 @@ fn passing() {}
     let test_run = runner.run()?;
     assert!(test_run.success);
 
-    let expected = r###"use k9::*;
+    let expected = r#########"use k9::*;
 
 #[test]
 fn inline_snapshot() {
     snapshot!(format!("{}", std::f64::consts::E), "2.718281828459045");
     k9::snapshot!(format!("{}", std::f64::consts::E), "2.718281828459045");
+    snapshot!(
+        format!("much to escape--> \"{} <--in here", "#".repeat(7)),
+        r########"much to escape--> "####### <--in here"########
+    );
 }
 
 #[test]
 fn passing() {}
-"###;
+"#########;
 
     // Inline snapshot must be updated in the source.
     // NOTE: we're using assert_equal! so we don't test inline snapshot feature
