@@ -70,7 +70,15 @@ fn should_force_enable_colors() -> bool {
     // colored output. Detect that case so we can force enable colored
     // output.
     // If this is not set, fall back to the usual `colored` behavior.
-    is_buck_build()
+    if is_buck_build() {
+        return true;
+    }
+
+    if std::env::var("K9_FORCE_COLORS").map_or(false, |_| true) {
+        return true;
+    }
+
+    false
 }
 
 pub fn update_instructions() -> colored::ColoredString {
