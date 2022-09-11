@@ -47,7 +47,9 @@ pub fn find_snapshot_literal_range<S: Into<String>>(
     line_num: usize,
     literal_exists: bool,
 ) -> Result<Range> {
-    let syntax = syn::parse_file(file_content).expect("Unable to parse file");
+    let syntax = syn::parse_file(file_content)
+        .context("Unable to parse file using syn::parse_file")?;
+
     let macro_name = macro_name.into();
 
     let mut macro_visitor = MacroVisitor {
@@ -103,7 +105,13 @@ Given macro call:
             )
         }
     } else {
-        let last = tt.into_iter().last().expect("must have last tokentree");
+        let last = tt
+            .into_iter()
+            .last()
+            .ok_or(anyhow!("must have last tokentree"))?;
+
+        
+
         let span = last.span();
 
         Ok(Range {

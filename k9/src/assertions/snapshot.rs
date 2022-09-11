@@ -5,7 +5,7 @@ use crate::types;
 use anyhow::{Context, Result};
 use colored::*;
 use lazy_static::lazy_static;
-use std::collections::HashMap;
+use std::collections::hash_map::{HashMap, Entry};
 use std::fmt::Debug;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -41,8 +41,7 @@ pub fn snapshot<V: Debug>(
     file: &str,
 ) -> Option<String> {
     snapshot_internal(value, snapshot, line, file)
-        .context("snapshot!() macro failed")
-        .unwrap()
+        .context("snapshot!() macro failed")?
 }
 
 pub fn snapshot_internal<V: Debug>(
@@ -69,11 +68,11 @@ pub fn snapshot_internal<V: Debug>(
 
                 if need_updating {
                     let mode = UpdateInlineSnapshotMode::Replace;
-                    schedule_snapshot_update(this_file_path, line, &value_str, mode).unwrap();
+                    schedule_snapshot_update(this_file_path, line, &value_str, mode)?;
                 }
             } else {
                 let mode = UpdateInlineSnapshotMode::Create;
-                schedule_snapshot_update(this_file_path, line, &value_str, mode).unwrap();
+                schedule_snapshot_update(this_file_path, line, &value_str, mode)?;
             };
 
             Ok(None)
@@ -125,8 +124,8 @@ impl SourceFile {
             .with_context(|| format!("Can't read source file. File path: {}", absolute_path))
     }
 
-    pub fn write(&self) {
-        std::fs::write(&self.path, &self.content).unwrap();
+    pub fn write(&self) -> Result<()> {
+        std::fs::write(&self.path, &self.content)?;
     }
 
     pub fn format(&mut self) {
@@ -142,17 +141,26 @@ where
     F: FnOnce(&mut SourceFile) -> Result<T>,
 {
     let mut map = SOURCE_FILES.lock().expect("poisoned lock");
-    let source_file = map
+
+    let source_file_entry = map
         .as_mut()
         .context("Missing source file")?
-        .entry(absolute_path.to_string())
-        .or_insert_with(|| SourceFile::new(absolute_path.to_string()).unwrap());
+        .entry(absolute_path.to_string());
+
+    let source_file = match source_file_entry {
+        Entry::Vacant(entry) => {
+            let new_source_file = SourceFile::new(absolute_path.to_string())?;
+            entry.insert(new_source_file)
+        },
+
+        Entry::Occupied(entry) => entry.get_mut()
+    };
 
     f(source_file)
 }
 
-fn snapshot_matching_message(s: &str, snapshot: &str) -> Option<String> {
-    let diff = crate::string_diff::colored_diff(snapshot, s);
+fn snapshot_matching_message(s: &str, snapshot: &str) -> Result<Option<String>> {
+    let diff = crate::string_diff::colored_diff(snapshot, s)?;
 
     diff.map(|diff| {
         format!(

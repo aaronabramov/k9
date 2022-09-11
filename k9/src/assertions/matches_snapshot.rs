@@ -1,25 +1,33 @@
 use crate::string_diff::colored_diff;
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 use colored::*;
 use std::path::{Path, PathBuf};
 
 const SNAPSHOT_DIR: &str = "__k9_snapshots__";
 
-pub fn get_snapshot_dir(source_file: &str) -> PathBuf {
+pub fn get_snapshot_dir(source_file: &str) -> Result<PathBuf> {
     let mut c = Path::new(source_file).components();
-    let source_file_name = c.next_back().unwrap().as_os_str().to_string_lossy();
+    let source_file_name = c
+        .next_back()
+        .ok_or_else(|| anyhow!("No element can be removed from end of the iterator"))?
+        .as_os_str()
+        .to_string_lossy();
+
     let mut p: PathBuf = c.collect();
     p.push(SNAPSHOT_DIR);
     p.push(source_file_name.replace(".rs", ""));
-    p
+    Ok(p)
 }
 
-pub fn get_test_name() -> String {
+pub fn get_test_name() -> Option<String> {
     let t = std::thread::current();
-    t.name()
-        .expect("Can't extract the test name")
+
+    let replaced_name = t
+        .name()?
         .to_string()
-        .replace("::", "_")
+        .replace("::", "_");
+
+    return Some(replaced_name)
 }
 
 pub fn get_test_snap_path(snapshot_dir: &Path, test_name: &str) -> PathBuf {
@@ -49,15 +57,16 @@ pub fn snap_internal<T: std::fmt::Display>(
     _line: u32,
     _column: u32,
     file: &str,
-) -> Option<String> {
+) -> Result<Option<String>> {
     let thing_str = thing.to_string();
 
-    let snapshot_dir = get_snapshot_dir(file);
+    let snapshot_dir = get_snapshot_dir(file)?;
     let test_name = get_test_name();
     let relative_snap_path = get_test_snap_path(&snapshot_dir, &test_name)
         .display()
         .to_string();
-    let crate_root = crate::paths::find_crate_root(file).unwrap();
+
+    let crate_root = crate::paths::find_crate_root(file)?;
 
     let mut absolute_snap_path = crate_root;
     absolute_snap_path.push(&relative_snap_path);
@@ -66,15 +75,15 @@ pub fn snap_internal<T: std::fmt::Display>(
     let snapshot_desc = "snapshot".green();
 
     if crate::config::CONFIG.update_mode {
-        ensure_snap_dir_exists(&absolute_snap_path).unwrap();
-        std::fs::write(&absolute_snap_path, thing_str).unwrap();
-        None
+        ensure_snap_dir_exists(&absolute_snap_path)?;
+        std::fs::write(&absolute_snap_path, thing_str)?;
+        Ok(None)
     } else if absolute_snap_path.exists() {
-        let snapshot_content = std::fs::read_to_string(&absolute_snap_path.display().to_string())
-            .expect("can't read snapshot file");
-        let diff = colored_diff(&snapshot_content, &thing_str);
+        let snapshot_content = std::fs::read_to_string(&absolute_snap_path.display().to_string())?;
+        
+        let diff = colored_diff(&snapshot_content, &thing_str)?;
 
-        diff.map(|diff| {
+        Ok(diff.map(|diff| {
             format!(
                 "Expected {string_desc} to match {snapshot_desc} stored in
 {file}
@@ -90,9 +99,9 @@ Difference:
                 diff = diff,
                 update_instructions = crate::config::update_instructions(),
             )
-        })
+        }))
     } else {
-        Some(format!(
+        Ok(Some(format!(
             "Expected {string_desc} to match {snapshot_desc} stored in
 {file}
 
@@ -104,6 +113,6 @@ but that snapshot file does not exist.
             snapshot_desc = snapshot_desc,
             file = relative_snap_path.green(),
             update_instructions = crate::config::update_instructions(),
-        ))
+        )))
     }
 }

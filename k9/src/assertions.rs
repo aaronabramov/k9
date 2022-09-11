@@ -1,5 +1,7 @@
 use crate::utils;
 use colored::*;
+use anyhow::{Context, Result};
+
 
 #[cfg(feature = "regex")]
 pub mod err_matches_regex;
@@ -29,7 +31,7 @@ pub struct Assertion {
 }
 
 impl Assertion {
-    pub fn get_failure_message(&self) -> String {
+    pub fn get_failure_message(&self) -> Result<String> {
         let message = format!(
             "
 {separator}
@@ -42,13 +44,13 @@ impl Assertion {
             description = utils::add_linebreaks(
                 self.description
                     .as_ref()
-                    .unwrap_or(&"Assertion Failure!".to_string())
+                    .context("Assertion Failure!".to_string())?
             ),
             failure_message = self.failure_message,
             separator = utils::terminal_separator_line().dimmed(),
         );
 
-        message
+        Ok(message)
     }
 
     pub fn assertion_expression(&self) -> String {
@@ -683,6 +685,7 @@ macro_rules! snapshot {
             None,
         )
     }};
+
     ($to_snap:expr, $inline_snap:literal) => {{
         use $crate::__macros__::colored::*;
         $crate::assertions::initialize_colors();

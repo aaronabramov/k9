@@ -1,32 +1,30 @@
-use anyhow::Result;
-
+use anyhow::{Context, Result};
 use std::path::{Component, Path, PathBuf};
 
 // Project root is the root of the entire project. The project might contain multiple crate and it should not
 // be used together with whatever `file!()` macro will return.
-pub fn get_project_root_path() -> PathBuf {
+pub fn get_project_root_path() -> Result<PathBuf> {
     // If there's a buck build id we'll grab the `pwd`, because we're probably running `buck test` from the root
     if crate::config::CONFIG.built_with_buck {
-        let pwd = std::env::var("PWD").expect(
-            "
-`BUCK_BUILD_ID` environment variable was present, which means this project is being built with
-buck and relies on `PWD` env variable to contain the project root, but `PWD` wasn't there",
-        );
-        return PathBuf::from(pwd);
+        let pwd = std::env::var("PWD").context("
+        `BUCK_BUILD_ID` environment variable was present, which means this project is being built with
+        buck and relies on `PWD` env variable to contain the project root, but `PWD` wasn't there")?;
+
+        return Ok(PathBuf::from(pwd));
     }
 
     // otherwise ask cargo for project root
     let project_root =
-        std::env::var("CARGO_MANIFEST_DIR").expect("Can't get project root directory");
-    PathBuf::from(project_root)
+        std::env::var("CARGO_MANIFEST_DIR").context("Can't get project root directory")?;
+
+    Ok(PathBuf::from(project_root))
 }
 
 // Crate root will be the root of the project + directory of one of the workspace crates (if exists)
 // To find this we'll need to use any `file!()` macro value to test if the file exist using
 // an absolute path.
 pub fn find_crate_root(result_of_file_macro: &str) -> Result<PathBuf> {
-    let project_root = get_project_root_path();
-
+    let project_root = get_project_root_path()?;
     let mut without_overlap = project_root.clone();
     without_overlap.push(result_of_file_macro);
 

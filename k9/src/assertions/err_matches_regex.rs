@@ -1,11 +1,12 @@
-use colored::*;
 use regex::Regex;
+use anyhow::{Context, Result};
+use colored::*;
 
 pub fn assert_err_matches_regex<A, T: std::fmt::Debug>(
     result: Result<A, T>,
     regex: &str,
-) -> Option<String> {
-    let r = Regex::new(regex).unwrap();
+) -> Result<Option<String>> {
+    let r = Regex::new(regex).context("Failed to compile RegularExpression using regex::RegEx")?;
     let result_desc = "Result<T, E>".red();
     let err_desc = "Err(E)".red();
     let format_desc = "format!(\"{:?}\", error)".yellow();

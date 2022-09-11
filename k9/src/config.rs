@@ -48,7 +48,7 @@ fn is_buck_build() -> bool {
 }
 
 fn is_update_mode() -> bool {
-    // If runtime ENV variable is set, it takes precedence
+    // If runtime    ENV variable is set, it takes precedence
     let runtime_var = std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true);
 
     if !runtime_var && is_buck_build() {

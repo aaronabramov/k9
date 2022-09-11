@@ -1,28 +1,34 @@
 use colored::*;
-use diff::{lines, Result};
+use anyhow::Result;
+use diff::lines;
 use std::fmt::Write;
 
-pub fn colored_diff(left: &str, right: &str) -> Option<String> {
+pub fn colored_diff(left: &str, right: &str) -> Result<Option<String>> {
     let mut result = String::new();
 
     if left == right {
-        return None;
+        return Ok(None);
     }
 
     let lines = lines(left, right);
+
     result.push('\n');
+
     for line in lines {
         match line {
-            Result::Left(l) => {
-                writeln!(result, "{} {}", "-".red(), &l.red()).unwrap();
+            diff::Result::Left(l) => {
+                writeln!(result, "{} {}", "-".red(), &l.red())?;
             }
-            Result::Right(r) => {
-                writeln!(result, "{} {}", "+".green(), &r.green()).unwrap();
+            
+            diff::Result::Right(r) => {
+                writeln!(result, "{} {}", "+".green(), &r.green())?;
             }
-            Result::Both(l, _r) => {
-                writeln!(result, "  {}", &l.dimmed()).unwrap();
+
+            diff:Result::Both(l, _r) => {
+                writeln!(result, "  {}", &l.dimmed())?;
             }
         }
     }
-    Some(result)
+
+    Ok(Some(result))
 }

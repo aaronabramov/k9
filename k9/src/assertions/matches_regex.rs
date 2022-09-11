@@ -1,8 +1,9 @@
-use colored::*;
 use regex::Regex;
+use anyhow::Result;
+use colored::*;
 
-pub fn assert_matches_regex(s: &str, regex: &str) -> Option<String> {
-    let r = Regex::new(regex).unwrap();
+pub fn assert_matches_regex(s: &str, regex: &str) -> Result<Option<String>> {
+    let r = Regex::new(regex).context("Failed to compile RegExp using regex::RegEx");
 
     if !r.is_match(s) {
         let message = format!(
