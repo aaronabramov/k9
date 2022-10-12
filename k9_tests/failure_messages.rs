@@ -15,7 +15,7 @@ fn get_error_message(test_name: &str) -> Result<String> {
     let test_run = project.run_matching_tests(test_name)?;
     anyhow::ensure!(
         test_run.test_cases.len() == 1,
-        "Can only run a single test here. Make sure you're providing a stirng that matches exactly one test name. 
+        "Can only run a single test here. Make sure you're providing a string that matches exactly one test name. 
         ===========================================================================
         Test cases: \n {:?}\n
         STDOUT: \n{}\n

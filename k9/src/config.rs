@@ -2,15 +2,33 @@ use colored::*;
 use lazy_static::lazy_static;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
+pub enum BuildSystem {
+    /// https://buck.build/
+    Buck,
+    /// https://developers.facebook.com/blog/post/2021/07/01/future-of-buck/
+    Buck2,
+    /// https://github.com/rust-lang/cargo
+    Cargo,
+}
+
+impl BuildSystem {
+    pub fn is_buck(&self) -> bool {
+        match self {
+            Self::Buck | Self::Buck2 => true,
+            Self::Cargo => false,
+        }
+    }
+}
+
 pub struct Config {
-    /// Configurable so we can test all assertions in our own test suite without panicing.
+    /// Configurable so we can test all assertions in our own test suite without panicking.
     pub assertions_will_panic: AtomicBool,
     /// 0 === disabled
     pub terminal_width_override: AtomicUsize,
     // Snapshot update mode
     pub update_mode: bool,
-    /// Whether this binary is built with buck
-    pub built_with_buck: bool,
+    /// What build system this project is being built with
+    pub build_system: BuildSystem,
     /// Whether we should always enable colored output
     pub force_enable_colors: bool,
 }
@@ -20,7 +38,7 @@ lazy_static! {
         assertions_will_panic: AtomicBool::new(true),
         terminal_width_override: AtomicUsize::new(0),
         update_mode: is_update_mode(),
-        built_with_buck: is_buck_build(),
+        build_system: build_system(),
         force_enable_colors: should_force_enable_colors(),
     };
 }
@@ -43,26 +61,19 @@ pub fn terminal_width_override() -> usize {
     CONFIG.terminal_width_override.load(Ordering::Relaxed)
 }
 
-fn is_buck_build() -> bool {
-    std::env::var("BUCK_BUILD_ID").is_ok()
+fn build_system() -> BuildSystem {
+    if std::env::var("BUCK_BUILD_ID").is_ok() {
+        BuildSystem::Buck
+    } else if std::env::var("BUCK2_DAEMON_UUID").is_ok() {
+        BuildSystem::Buck2
+    } else {
+        BuildSystem::Cargo
+    }
 }
 
 fn is_update_mode() -> bool {
     // If runtime ENV variable is set, it takes precedence
-    let runtime_var = std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true);
-
-    if !runtime_var && is_buck_build() {
-        // If not, we'll also check compile time variable. This is going to be the case with `buck`
-        // when env variables are passed to `rustc` but not to the actual binary (when running `buck test ...`)
-        //
-        // NOTE: using compile time vars is a bit sketchy, because technically you can compile the test suite
-        // once and re-run the compiled version multiple times in scenarios where you don't want to update
-        if option_env!("K9_UPDATE_SNAPSHOTS").is_some() {
-            return true;
-        }
-    }
-
-    runtime_var
+    std::env::var("K9_UPDATE_SNAPSHOTS").map_or(false, |_| true)
 }
 
 fn should_force_enable_colors() -> bool {
@@ -70,23 +81,44 @@ fn should_force_enable_colors() -> bool {
     // colored output. Detect that case so we can force enable colored
     // output.
     // If this is not set, fall back to the usual `colored` behavior.
-    if is_buck_build() {
+    if build_system().is_buck() {
         return true;
     }
 
-    if std::env::var("K9_FORCE_COLORS").map_or(false, |_| true) {
-        return true;
+    if let Ok(force_colors) = std::env::var("K9_FORCE_COLORS") {
+        match force_colors.as_str() {
+            "1" => return true,
+            "0" => return false,
+            _ => (),
+        }
     }
 
     false
 }
 
 pub fn update_instructions() -> colored::ColoredString {
-    if is_buck_build() {
-        // This only works with FB internal infra + buck, but i don't think anyone in the real world
-        // would use buck to build anything so it's probably fine to hardcode it here. ¯\_(ツ)_/¯
-        "buck test //path/to/your/buck/target/... -- --env K9_UPDATE_SNAPSHOTS=1".yellow()
-    } else {
-        "run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots".yellow()
+    match CONFIG.build_system {
+        BuildSystem::Buck => {
+            "buck test //path/to/your/buck/target/... -- --env K9_UPDATE_SNAPSHOTS=1".yellow()
+        }
+        BuildSystem::Buck2 => {
+            "buck2 test //path/to/your/buck/target/... -- --env K9_UPDATE_SNAPSHOTS=1".yellow()
+        }
+        BuildSystem::Cargo => {
+            "run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots".yellow()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config_building() {
+        // make sure we can construct the CONFIG. this is a regression test
+        // after i accidentally put a circular reference in the config functions
+        // and caused everything to stall.
+        let _b = format!("{}", CONFIG.force_enable_colors);
     }
 }
