@@ -28,6 +28,9 @@ impl TestRun {
             cmd.arg(match_tests);
         }
 
+        // make sure there's no interference with local env
+        cmd.env("K9_FORCE_COLORS", "0");
+
         if self.update_snapshots {
             cmd.env("K9_UPDATE_SNAPSHOTS", "1");
         } else {

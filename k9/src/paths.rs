@@ -5,12 +5,14 @@ use std::path::{Component, Path, PathBuf};
 // Project root is the root of the entire project. The project might contain multiple crate and it should not
 // be used together with whatever `file!()` macro will return.
 pub fn get_project_root_path() -> PathBuf {
-    // If there's a buck build id we'll grab the `pwd`, because we're probably running `buck test` from the root
-    if crate::config::CONFIG.built_with_buck {
+    // It seems like when it's built with Buck, PWD will always point to the
+    // repo root, regardless of where it's run from. We'll use it as a base dir
+    if crate::config::CONFIG.build_system.is_buck() {
         let pwd = std::env::var("PWD").expect(
             "
-`BUCK_BUILD_ID` environment variable was present, which means this project is being built with
-buck and relies on `PWD` env variable to contain the project root, but `PWD` wasn't there",
+`BUCK_BUILD_ID` or `BUCK2_DAEMON_UUID` environment variable was present,
+which means this project is being built with buck and relies on `PWD` env
+variable to contain the project root, but `PWD` wasn't there",
         );
         return PathBuf::from(pwd);
     }
