@@ -1,4 +1,3 @@
-#![cfg_attr(nightly, allow(clippy::test_attr_in_doctest))]
 use crate::utils;
 use colored::*;
 
@@ -458,24 +457,22 @@ macro_rules! assert_err_matches_regex {
 /// only argument and stores the snapshot in a separate file instead of inlining
 /// it in the source code of the test.
 ///
-/// ```rust
-/// #[test]
-/// fn my_test() {
-///     struct A {
-///         name: &'a str,
-///         age: u32
-///     }
+/// ```should_panic
+///   #[derive(Debug)]
+///   struct A<'a> {
+///       name: &'a str,
+///       age: u32
+///   }
 ///
-///     let a = A { name: "Lance", age: 9 };
+///   let a = A { name: "Lance", age: 9 };
 ///
-///     // When first run with `K9_UPDATE_SNAPSHOTS=1` it will
-///     // create `__k9_snapshots__/my_test_file/my_test.snap` file
-///     // with contents being the serialized value of `a`.
-///     // Next time the test is run, if the newly serialized value of a
-///     // is different from the value of that snapshot file, the assertion
-///     // will fail.
-///     assert_matches_snapshot!(a);
-/// }
+///   // When first run with `K9_UPDATE_SNAPSHOTS=1` it will
+///   // create `__k9_snapshots__/my_test_file/my_test.snap` file
+///   // with contents being the serialized value of `a`.
+///   // Next time the test is run, if the newly serialized value of a
+///   // is different from the value of that snapshot file, the assertion
+///   // will fail.
+///   k9::assert_matches_snapshot!(format!("{:#?}", a));
 /// ```
 #[macro_export]
 macro_rules! assert_matches_snapshot {
