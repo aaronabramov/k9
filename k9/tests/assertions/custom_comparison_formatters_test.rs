@@ -42,7 +42,8 @@ fn test_assert_hash_sets_small_diff_with_custom_format() {
 
     k9_stable::snapshot!(
         assertion_message(assert_equal!(s1, s2)),
-        r##"
+        "
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_equal!(s1, s2);
 
@@ -65,7 +66,8 @@ Expected `Left` to equal `Right`:
   }
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"##
+
+"
     );
 }
 
@@ -79,7 +81,8 @@ fn test_assert_hash_maps_small_diff_with_custom_format() {
 
     k9_stable::snapshot!(
         assertion_message(assert_equal!(s1, s2)),
-        r##"
+        "
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_equal!(s1, s2);
 
@@ -102,7 +105,8 @@ Expected `Left` to equal `Right`:
   }
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"##
+
+"
     );
 }
 
