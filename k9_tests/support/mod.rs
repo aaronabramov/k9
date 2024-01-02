@@ -2,7 +2,7 @@ mod test_project;
 mod test_run;
 
 pub use test_project::TestProject;
-pub use test_run::{TestRun, TestRunResult, _TestRunBuilder as TestRunBuilder};
+pub use test_run::{TestRunResult, _TestRunBuilder as TestRunBuilder};
 
 pub const TEST_CARGO_TOML: &str = r#"
 [workspace]
