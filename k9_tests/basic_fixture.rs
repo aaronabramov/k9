@@ -33,7 +33,7 @@ fn basic_fixture_project() -> Result<()> {
 
     k9_released::snapshot!(
         test_run.stdout_sanitized,
-        r"
+        r#"
 
 running 0 tests
 
@@ -46,7 +46,8 @@ test snapshots_experimental::experimental_snapshot ... FAILED
 failures:
 
 ---- snapshots_experimental::experimental_snapshot stdout ----
-thread 'snapshots_experimental::experimental_snapshot' panicked at '
+thread 'snapshots_experimental::experimental_snapshot' panicked at _tests/snapshots_experimental.rs:16:5:
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 snapshot!(map);
 
@@ -71,7 +72,7 @@ Received value:
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', _tests/snapshots_experimental.rs:16:5
+
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -81,7 +82,7 @@ failures:
 test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out
 
 
-"
+"#
     );
 
     let test_run = project
