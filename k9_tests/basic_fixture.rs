@@ -46,7 +46,8 @@ test snapshots_experimental::experimental_snapshot ... FAILED
 failures:
 
 ---- snapshots_experimental::experimental_snapshot stdout ----
-thread 'snapshots_experimental::experimental_snapshot' panicked at '
+thread 'snapshots_experimental::experimental_snapshot' panicked at _tests/snapshots_experimental.rs:16:5:
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 snapshot!(map);
 
@@ -71,7 +72,7 @@ Received value:
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', _tests/snapshots_experimental.rs:16:5
+
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 

@@ -52,7 +52,8 @@ test assert_equal_basic ... FAILED
 failures:
 
 ---- assert_equal_basic stdout ----
-thread 'assert_equal_basic' panicked at '
+thread 'assert_equal_basic' panicked at _tests/mod.rs:5:5:
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_equal!(1, 2);
 
@@ -65,7 +66,7 @@ Expected `Left` to equal `Right`:
 + 2
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', _tests/mod.rs:5:5
+
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -97,7 +98,8 @@ test assert_equal_multiline_string ... FAILED
 failures:
 
 ---- assert_equal_multiline_string stdout ----
-thread 'assert_equal_multiline_string' panicked at '
+thread 'assert_equal_multiline_string' panicked at _tests/mod.rs:10:5:
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_equal!("hello\
 world", "hello\
@@ -114,7 +116,7 @@ world"
 how are you?"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', _tests/mod.rs:10:5
+
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
@@ -146,7 +148,8 @@ test snapshot_basic ... FAILED
 failures:
 
 ---- snapshot_basic stdout ----
-thread 'snapshot_basic' panicked at '
+thread 'snapshot_basic' panicked at _tests/mod.rs:15:5:
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 snapshot!("a");
 
@@ -162,7 +165,7 @@ a
 run with `K9_UPDATE_SNAPSHOTS=1` to update/create snapshots
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-', _tests/mod.rs:15:5
+
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 
