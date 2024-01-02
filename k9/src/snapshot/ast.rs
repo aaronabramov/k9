@@ -16,9 +16,7 @@ impl<'ast> Visit<'ast> for MacroVisitor {
     fn visit_macro(&mut self, m: &'ast Macro) {
         let last_path_segment = m.path.segments.last();
         if let Some(PathSegment { ident, .. }) = last_path_segment {
-            if ident.to_string().as_str() == self.macro_name
-                && ident.span().start().line == self.line
-            {
+            if ident == &self.macro_name && ident.span().start().line == self.line {
                 self.found.replace((m.tokens.to_owned(), m.to_owned()));
             }
         }
