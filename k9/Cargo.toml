@@ -15,7 +15,7 @@ default = ["regex"]
 custom_comparison_formatters = []
 
 [dependencies]
-colored = "1.9"
+colored = "2"
 diff = "0.1"
 lazy_static = "1.4"
 libc = "0.2"
