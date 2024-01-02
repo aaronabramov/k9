@@ -1,3 +1,4 @@
+#![cfg_attr(nightly, allow(clippy::test_attr_in_doctest))]
 use crate::utils;
 use colored::*;
 
