@@ -16,7 +16,7 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
     assert!(assert_greater_than_or_equal!(1.0f64, 1.0f64).is_none());
     assert!(assert_greater_than_or_equal!(9.8f64, 1.0f64).is_none());
 
-    k9_stable::assert_matches_inline_snapshot!(
+    k9_stable::snapshot!(
         assertion_message(assert_greater_than_or_equal!(1, 2)),
         "
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -45,7 +45,7 @@ Right value: 2
 #[test]
 fn with_context() {
     super::setup_test_env();
-    k9_stable::assert_matches_inline_snapshot!(
+    k9_stable::snapshot!(
         assertion_message(assert_greater_than_or_equal!(
             1,
             2,
