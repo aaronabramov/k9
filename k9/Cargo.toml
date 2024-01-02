@@ -1,6 +1,6 @@
 [package]
 name = "k9"
-version = "0.11.6"
+version = "0.11.7"
 authors = ["Aaron Abramov <aaron@abramov.io>"]
 edition = "2018"
 description = "rust testing library"
@@ -19,7 +19,9 @@ colored = "2"
 diff = "0.1"
 lazy_static = "1.4"
 libc = "0.2"
-proc-macro2 = { version = "1.0", default-features = false, features= ["span-locations"] }
+proc-macro2 = { version = "1.0", default-features = false, features = [
+    "span-locations",
+] }
 regex = { version = "1.3", optional = true }
 syn = { version = "2.0", features = ["full", "extra-traits", "visit"] }
 terminal_size = "0.2"
