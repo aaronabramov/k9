@@ -32,4 +32,4 @@ rand = "0.7.3"
 sha2 = "0.9.1"
 strip-ansi-escapes = "0.1.0"
 derive_builder = "0.9.0"
-k9_stable = { version = "0.3.0", package = "k9" }
+k9_stable = { version = "0.11.7", package = "k9" }

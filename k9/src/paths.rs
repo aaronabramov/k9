@@ -134,33 +134,27 @@ mod tests {
     }
     #[test]
     fn remove_path_overlap_test() -> Result<()> {
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             remove_overlap_helper("hello/world", "world/hello")?,
             r##"hello"##
         );
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             remove_overlap_helper("a/b/c/d/e/f/g", "c/d/e/f/g/h/i")?,
             r##"a/b"##
         );
 
-        k9_stable::assert_matches_inline_snapshot!(
-            remove_overlap_helper("a/b/c", "a/b/c")?,
-            r##""##
-        );
+        k9_stable::snapshot!(remove_overlap_helper("a/b/c", "a/b/c")?, r##""##);
 
         // no overlap, similar directories
-        k9_stable::assert_matches_inline_snapshot!(
-            remove_overlap_helper("a/b/c/d", "a/b/c")?,
-            r##"a/b/c/d"##
-        );
+        k9_stable::snapshot!(remove_overlap_helper("a/b/c/d", "a/b/c")?, r##"a/b/c/d"##);
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             remove_overlap_helper("/home/workspace/my_crate", "my_crate/my_file")?,
             r##"/home/workspace"##
         );
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             remove_overlap_helper("/Users/me/p/gull/gull", "gull/e2e/flow_codegen_test.rs")?,
             r##"/Users/me/p/gull"##
         );

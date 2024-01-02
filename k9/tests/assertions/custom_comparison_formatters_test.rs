@@ -40,7 +40,7 @@ fn test_assert_hash_sets_small_diff_with_custom_format() {
     let s1 = (1..10).collect::<HashSet<i32>>();
     let s2 = (1..11).collect::<HashSet<i32>>();
 
-    k9_stable::assert_matches_inline_snapshot!(
+    k9_stable::snapshot!(
         assertion_message(assert_equal!(s1, s2)),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -77,7 +77,7 @@ fn test_assert_hash_maps_small_diff_with_custom_format() {
     let s1 = ((1..10).zip(1..10)).collect::<HashMap<i32, i32>>();
     let s2 = ((1..11).zip(1..11)).collect::<HashMap<i32, i32>>();
 
-    k9_stable::assert_matches_inline_snapshot!(
+    k9_stable::snapshot!(
         assertion_message(assert_equal!(s1, s2)),
         r##"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

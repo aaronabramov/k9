@@ -149,7 +149,7 @@ fn main() {                                         // 2
         let range = find_snapshot_literal_range(SOURCE, "random_macro", 4, false)?;
         k9_stable::assert_equal!(&range.start, &range.end);
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             format!("{:?}", range),
             r##"Range { start: LineColumn { line: 4, column: 24 }, end: LineColumn { line: 4, column: 24 } }"##
         );
@@ -160,7 +160,7 @@ fn main() {                                         // 2
     fn literal() -> Result<()> {
         let range = find_snapshot_literal_range(SOURCE, "hello_macro", 5, true)?;
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             format!("{:?}", range),
             r##"Range { start: LineColumn { line: 5, column: 25 }, end: LineColumn { line: 5, column: 34 } }"##
         );
@@ -171,7 +171,7 @@ fn main() {                                         // 2
     fn not_a_literal_error() {
         let err = find_snapshot_literal_range(SOURCE, "wrong_macro", 6, true).unwrap_err();
 
-        k9_stable::assert_matches_inline_snapshot!(
+        k9_stable::snapshot!(
             format!("{:?}", err),
             r##"
 Failed to extract a snapshot literal from a snapshot macro call.
