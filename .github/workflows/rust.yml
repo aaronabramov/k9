@@ -24,16 +24,19 @@ jobs:
           - nightly
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          override: true
-          components: rustfmt, clippy
+      - name: Update local toolchain
+        run: |
+          rustup update
+          rustup component add clippy
+          rustup install nightly  
 
-      - uses: actions-rs/cargo@v1
+      - name: Toolchain info
+        run: |
+          cargo --version --verbose
+          rustc --version
+          cargo clippy --version     
 
       - name: Run tests
         run: cargo test --verbose
