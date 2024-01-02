@@ -19,6 +19,7 @@ fn test_assert_greater_than_or_equal() -> Result<()> {
     k9_stable::snapshot!(
         assertion_message(assert_greater_than_or_equal!(1, 2)),
         "
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 assert_greater_than_or_equal!(1, 2);
 
@@ -30,6 +31,7 @@ Left value:  1
 Right value: 2
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 "
     );
 
@@ -51,9 +53,10 @@ fn with_context() {
             2,
             "Expected left to greater than or equal to right"
         )),
-        "
+        r#"
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-assert_greater_than_or_equal!(1, 2, \"Expected left to greater than or equal to right\");
+assert_greater_than_or_equal!(1, 2, "Expected left to greater than or equal to right");
 
 Expected left to greater than or equal to right
 
@@ -63,6 +66,7 @@ Left value:  1
 Right value: 2
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"
+
+"#
     );
 }

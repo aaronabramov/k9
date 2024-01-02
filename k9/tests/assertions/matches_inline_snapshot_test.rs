@@ -7,7 +7,7 @@ fn test_matches_inline_snapshot() {
 
     k9_stable::snapshot!(
         r#"escaped string \": \"{\\"namespace\\":\\"www\\",\\"tim"#,
-        r##"escaped string \": \"{\\"namespace\\":\\"www\\",\\"tim"##
+        r#"escaped string \\": \\"{\\\\"namespace\\\\":\\\\"www\\\\",\\\\"tim"#
     );
 
     k9_stable::snapshot!(

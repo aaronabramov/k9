@@ -173,7 +173,8 @@ fn main() {                                         // 2
 
         k9_stable::snapshot!(
             format!("{:?}", err),
-            r##"
+            r#"
+
 Failed to extract a snapshot literal from a snapshot macro call.
 Snapshot literal must be the last argument to a macro call and must be a string literal. e.g.
 
@@ -187,7 +188,8 @@ Given macro call:
 ```
 wrong_macro!(stuff, not_a_literal)
 ```
-"##
+
+"#
         );
     }
 }
