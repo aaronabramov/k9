@@ -20,17 +20,27 @@ jobs:
         os: [ubuntu-latest, macOS-latest]
         rust:
           - stable
-          - beta
           - nightly
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Update local toolchain
+        run: rustup update
+          
+      - name: rustup install (nightly)
+        if: ${{ matrix.rust == 'nightly' }}
         run: |
-          rustup update
-          rustup component add clippy
-          rustup install nightly  
+          rustup install nightly
+          rustup default nightly  
+          rustup component add clippy rustfmt
+
+      - name: rustup install (stable)
+        if: ${{ matrix.rust == 'stable' }}
+        run: |
+          rustup install stable
+          rustup default stable  
+          rustup component add clippy rustfmt
 
       - name: Toolchain info
         run: |

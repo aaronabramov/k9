@@ -70,7 +70,7 @@ pub fn snap_internal<T: std::fmt::Display>(
         std::fs::write(&absolute_snap_path, thing_str).unwrap();
         None
     } else if absolute_snap_path.exists() {
-        let snapshot_content = std::fs::read_to_string(&absolute_snap_path.display().to_string())
+        let snapshot_content = std::fs::read_to_string(absolute_snap_path.display().to_string())
             .expect("can't read snapshot file");
         let diff = colored_diff(&snapshot_content, &thing_str);
 
